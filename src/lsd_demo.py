@@ -10,6 +10,7 @@ import spams
 
 import frames as f
 import graph as g
+from alm_lsd import inexact_alm_lsd
 
 
 def main():
@@ -29,3 +30,5 @@ def main():
     frames_D = normalized_frames.reshape(np.prod(frame_dimensions), num_frames)
     batch_dimensions = [3, 3]
     graph = g.build_graph(frame_dimensions, batch_dimensions)
+
+    background_L, foreground_S, num_iterations = inexact_alm_lsd(frames_D, graph)
