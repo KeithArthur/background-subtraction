@@ -11,12 +11,12 @@ def _soft_thresh(S, threshold):
     return [max(0, x - threshold) for x in S]
 
 def shrink(M, threshold):
-    [U, S, V] = la.svd(M)
+    [U, S, V] = la.svd(M, full_matrices=False)
     return np.dot(U, np.dot(np.diag(_soft_thresh(S, threshold)),
                             V))
 
 def min_cost_flow(input_signal_U, graph, lambda1):
-    return spams.proximalGraph(input_signal_U,
+    return spams.proximalGraph(np.asfortranarray(input_signal_U, dtype=np.float32),
                                graph,
                                False,
                                numThreads=-1,
