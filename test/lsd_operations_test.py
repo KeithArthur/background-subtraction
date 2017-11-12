@@ -1,6 +1,7 @@
 from pytest import approx
 from numpy.testing import assert_allclose as eq
 import numpy as np
+import scipy.sparse as sp
 
 import lsd_operations as lsd
 
@@ -30,4 +31,20 @@ def test_shrink():
        np.array([[ 1.04053125,  1.47651896],
                  [ 2.3521747 ,  3.33774745]]))
 
-# def test_min_cost_flow()
+def test_min_cost_flow_l1():
+    input_signal_U = np.asfortranarray(np.array([[1.0, 2.0], [3.0, 4.0]]), dtype=np.float32)
+    groups_dimensions = (input_signal_U.shape[0], input_signal_U.shape[0])
+    singleton_graph = {'eta_g': np.ones(input_signal_U.shape[0], dtype=np.float32),
+                       'groups': sp.csc_matrix(np.zeros(groups_dimensions), dtype=np.bool),
+                       'groups_var': sp.csc_matrix(np.eye(input_signal_U.shape[0], dtype=np.bool), dtype=np.bool)}
+    prox_l1 = lsd.min_cost_flow(input_signal_U, singleton_graph, 2.1)
+    assert np.allclose(prox_l1, np.array([[0.0, 0.0], [0.9, 1.9]], dtype=np.float32))
+
+def test_min_cost_flow():
+    input_signal_U = np.asfortranarray(np.array([[1.0, 2.0], [3.0, 4.0]]), dtype=np.float32)
+    groups_dimensions = (1, 1)
+    singleton_graph = {'eta_g': np.ones(1, dtype=np.float32),
+                       'groups': sp.csc_matrix(np.zeros(groups_dimensions), dtype=np.bool),
+                       'groups_var': sp.csc_matrix(np.ones((input_signal_U.shape[0], 1), dtype=np.bool), dtype=np.bool)}
+    prox = lsd.min_cost_flow(input_signal_U, singleton_graph, 0.1)
+    assert np.allclose(prox, np.array([[1.0, 2.0], [2.9, 3.9]], dtype=np.float32))

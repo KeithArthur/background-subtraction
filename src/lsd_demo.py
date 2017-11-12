@@ -29,4 +29,4 @@ def main():
     batch_dimensions = [3, 3]
     graph = g.build_graph(frame_dimensions, batch_dimensions)
 
-    background_L, foreground_S, num_iterations = inexact_alm_lsd(frames_D, graph)
+    background_L, foreground_S, err = inexact_alm_lsd(frames_D, graph)

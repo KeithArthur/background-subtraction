@@ -18,8 +18,10 @@ def shrink(M, threshold):
 def min_cost_flow(input_signal_U, graph, lambda1):
     return spams.proximalGraph(input_signal_U,
                                graph,
+                               False,
+                               numThreads=-1,
                                lambda1=lambda1,
                                regul='graph',
-                               verbose=True,
+                               verbose=False,
                                pos=False,
                                intercept=False);
