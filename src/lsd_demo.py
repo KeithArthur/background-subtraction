@@ -6,8 +6,6 @@ import numpy.linalg as la
 import numpy.random as rn
 import matplotlib.pyplot as plt
 
-import spams
-
 import frames as f
 import graph as g
 from alm_lsd import inexact_alm_lsd
