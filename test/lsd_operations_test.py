@@ -39,7 +39,7 @@ def test_min_cost_flow_l1():
                        'groups': sp.csc_matrix(np.zeros(groups_dimensions), dtype=np.bool),
                        'groups_var': sp.csc_matrix(np.eye(input_signal_U.shape[0], dtype=np.bool), dtype=np.bool)}
     prox_l1 = lsd.min_cost_flow(input_signal_U, singleton_graph, 2.1)
-    assert np.allclose(prox_l1, np.array([[0.0, 0.0], [0.9, 1.9]], dtype=np.float32))
+    eq(prox_l1, np.array([[0.0, 0.0], [0.9, 1.9]], dtype=np.float32), rtol=1e-6)
 
 def test_min_cost_flow():
     input_signal_U = np.asfortranarray(np.array([[1.0, 2.0], [3.0, 4.0]]), dtype=np.float32)
@@ -48,7 +48,7 @@ def test_min_cost_flow():
              'groups': sp.csc_matrix(np.zeros(groups_dimensions), dtype=np.bool),
              'groups_var': sp.csc_matrix(np.ones((input_signal_U.shape[0], 1), dtype=np.bool), dtype=np.bool)}
     prox = lsd.min_cost_flow(input_signal_U, graph, 0.1)
-    assert np.allclose(prox, np.array([[1.0, 2.0], [2.9, 3.9]], dtype=np.float32))
+    eq(prox, np.array([[1.0, 2.0], [2.9, 3.9]], dtype=np.float32), rtol=1e-6)
 
 def test_min_cost_flow_pixel():
     input_signal_U = np.asfortranarray(np.array([[1.0, 2.0, 3.0, 4.0, 5.0],
