@@ -16,7 +16,7 @@ def shrink(M, threshold):
                             V))
 
 def min_cost_flow(input_signal_U, graph, lambda1):
-    return spams.proximalGraph(np.asfortranarray(input_signal_U, dtype=np.float32),
+    return spams.proximalGraph(np.asfortranarray(input_signal_U, dtype=np.double),
                                graph,
                                False,
                                numThreads=-1,
