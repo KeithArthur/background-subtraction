@@ -1,6 +1,10 @@
 import scipy.sparse as sp
 import numpy as np
 
+
+import platform
+project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
+
 def build_graph(frame_dimensions, batch_dimensions):
     frame_height_m, frame_width_n = frame_dimensions
     batch_height = min(batch_dimensions[0], frame_height_m)
@@ -8,7 +12,7 @@ def build_graph(frame_dimensions, batch_dimensions):
     num_x = frame_height_m - batch_height + 1
     num_y = frame_width_n - batch_width + 1
     num_groups = num_x * num_y
-    graph = {'eta_g': np.ones(num_groups, dtype=np.float32),
+    graph = {'eta_g': np.ones(num_groups, dtype=project_float),
              'groups': sp.csc_matrix(np.zeros((num_groups, num_groups)),
                                      dtype=np.bool),
              'groups_var': sp.csc_matrix(np.zeros((frame_height_m * frame_width_n, num_groups), dtype=np.bool), dtype=np.bool)}

@@ -3,6 +3,9 @@ import numpy.linalg as la
 
 from lsd_operations import dual_norm, shrink, min_cost_flow
 
+import platform
+project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
+
 def _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S):
     background_G_L = frames_D - foreground_S + dual_Y / dual_mu
     return shrink(background_G_L, 1.0 / dual_mu)

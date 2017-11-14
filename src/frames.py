@@ -5,7 +5,7 @@ def resize_frames(frames, ratio):
     return np.array([scipy.misc.imresize(frames[..., frame_index], ratio) for frame_index in range(frames.shape[-1])])
 
 def _normalize_frame(frame):
-    return np.float32(frame) / np.max(frame)
+    return project_float(frame) / np.max(frame)
 
 def _normalize_frames(frames):
     return np.array([_normalize_frame(frame) for frame in frames])
