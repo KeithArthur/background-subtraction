@@ -38,3 +38,7 @@ def main():
     bin_fg = np.maximum(fg, 0)
     fg_images = [PIL.Image.fromarray(bin_fg[..., frame_index]).rotate(-90) for frame_index in range(bin_fg.shape[-1])]
     fg_images[0].save("out.gif", save_all=True, append_images=fg_images[1:])
+
+
+if __name__ == "__main__":
+    main()
