@@ -8,7 +8,7 @@ def build_graph(frame_dimensions, batch_dimensions):
     num_x = frame_height_m - batch_height + 1
     num_y = frame_width_n - batch_width + 1
     num_groups = num_x * num_y
-    graph = {'eta_g': np.ones(num_groups, dtype=np.double),
+    graph = {'eta_g': np.ones(num_groups, dtype=np.float32),
              'groups': sp.csc_matrix(np.zeros((num_groups, num_groups)),
                                      dtype=np.bool),
              'groups_var': sp.csc_matrix(np.zeros((frame_height_m * frame_width_n, num_groups), dtype=np.bool), dtype=np.bool)}
