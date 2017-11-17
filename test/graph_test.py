@@ -1,7 +1,37 @@
+import numpy as np
+from numpy.testing import assert_allclose as eq
+
 import graph as g
 
 def test_build_graph():
     graph = g.build_graph([5, 5], [3, 3])
     assert graph['groups_var'].shape == (25, 9)
     assert len(graph['groups_var'].nonzero()[0]) == 81
-    assert graph.keys() == ['groups_var', 'groups', 'eta_g']
+    eq(graph['eta_g'], np.ones(9))
+    eq(graph['groups'].todense().astype(np.int32), np.zeros((9, 9)))
+    int_graph = graph['groups_var'].todense().astype(np.int32)
+    eq(int_graph, [[1, 0, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 0, 0, 0, 0, 0, 0, 0],
+                   [1, 1, 1, 0, 0, 0, 0, 0, 0],
+                   [0, 1, 1, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 1, 0, 0, 0, 0, 0, 0],
+                   [1, 0, 0, 1, 0, 0, 0, 0, 0],
+                   [1, 1, 0, 1, 1, 0, 0, 0, 0],
+                   [1, 1, 1, 1, 1, 1, 0, 0, 0],
+                   [0, 1, 1, 0, 1, 1, 0, 0, 0],
+                   [0, 0, 1, 0, 0, 1, 0, 0, 0],
+                   [1, 0, 0, 1, 0, 0, 1, 0, 0],
+                   [1, 1, 0, 1, 1, 0, 1, 1, 0],
+                   [1, 1, 1, 1, 1, 1, 1, 1, 1],
+                   [0, 1, 1, 0, 1, 1, 0, 1, 1],
+                   [0, 0, 1, 0, 0, 1, 0, 0, 1],
+                   [0, 0, 0, 1, 0, 0, 1, 0, 0],
+                   [0, 0, 0, 1, 1, 0, 1, 1, 0],
+                   [0, 0, 0, 1, 1, 1, 1, 1, 1],
+                   [0, 0, 0, 0, 1, 1, 0, 1, 1],
+                   [0, 0, 0, 0, 0, 1, 0, 0, 1],
+                   [0, 0, 0, 0, 0, 0, 1, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 1, 1, 0],
+                   [0, 0, 0, 0, 0, 0, 1, 1, 1],
+                   [0, 0, 0, 0, 0, 0, 0, 1, 1],
+                   [0, 0, 0, 0, 0, 0, 0, 0, 1]])
