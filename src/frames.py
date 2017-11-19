@@ -5,7 +5,7 @@ import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
 
 def resize_frames(frames, ratio):
-    return np.array([scipy.misc.imresize(frames[..., frame_index], ratio) for frame_index in range(frames.shape[-1])])
+    return np.array([scipy.misc.imresize(frame, ratio) for frame in frames])
 
 def _normalize_frame(frame):
     return project_float(frame) / np.max(frame)
