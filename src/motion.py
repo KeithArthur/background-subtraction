@@ -35,10 +35,10 @@ def _init_missing_trajectories(flow, trajectories):
         trajectories['deltas'].append(left_pad([np.array(delta)], np.nan, frames_so_far))
         trajectories['positions'].append(np.array([col, row]) + np.floor(delta))
 
-def flow_into_trajectories(flow, trajectories):
+def _update_trajectories(flow, trajectories):
     for index, pos in enumerate(trajectories['positions']):
-        delta = flow[pos['y'], pos['x']]
-        pos += np.floor(delta)
+        delta = flow[int(pos[1]), int(pos[0])]
+        trajectories['positions'][index] += np.floor(delta)
         trajectories['deltas'][index].append(delta)
 
 def calc_trajectories(forward_flow, backward_flow):

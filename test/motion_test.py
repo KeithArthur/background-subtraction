@@ -13,11 +13,11 @@ def test__init_missing_trajectories_1():
     """Mutates the trajectories to initialize trajectories"""
     flow = np.array([[[0.0, 1.0], [-1.0, 0.0]],
                      [[1.0, 0.0], [0.0, -1.0]]])
-    trajectories = {'positions': [np.array(coll) for coll in []],
-                    'deltas': [np.array(coll) for coll in []]}
+    trajectories = {'positions': [],
+                    'deltas': []}
     m._init_missing_trajectories(flow, trajectories)
     assert_equal(trajectories, {
-        'positions': [np.array(coll) for coll in [[0.0, 1.0], [0.0, 0.0], [1.0, 1.0], [1.0, 0.0]]],
+        'positions': [[0.0, 1.0], [0.0, 0.0], [1.0, 1.0], [1.0, 0.0]],
         'deltas': [[[0.0, 1.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[0.0, -1.0]]]
     })
 
@@ -28,8 +28,19 @@ def test__init_missing_trajectories_2():
     trajectories = {'positions': [np.array(coll) for coll in [[1.0, 0.0]]],
                     'deltas': [[np.array(coll)] for coll in [[1.0, 0.0]]]}
     m._init_missing_trajectories(flow, trajectories)
-    print(trajectories)
     assert_equal(trajectories, {
-        'positions': [np.array(coll) for coll in [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]],
+        'positions': [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
         'deltas': [[[1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [-1.0, 0.0]]]
+    })
+
+def test__update_trajectories():
+    """Mutates trajectories to update existing trajectories but does not initialize new ones"""
+    flow = np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                     [[1.0, 0.0], [-1.0, 0.0]]])
+    trajectories = {'positions': [[1.0, 0.0]],
+                    'deltas': [[[1.0, 0.0]]]}
+    m._update_trajectories(flow, trajectories)
+    assert_equal(trajectories, {
+        'positions': [[0.0, 0.0]],
+        'deltas': [[[1.0, 0.0], [-1.0, 0.0]]]
     })
