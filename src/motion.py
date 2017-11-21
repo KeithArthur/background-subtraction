@@ -29,10 +29,11 @@ def _get_remaining_indices(trajectories_current_positions, shape):
 
 def _init_missing_trajectories(flow, trajectories):
     frames_so_far = len(trajectories['deltas'])
-    for row, col in _get_remaining_indices(trajectories['positions'], flow.shape[:2]):
+    position_indices = [np.flip(pos, 0) for pos in trajectories['positions']]
+    for row, col in _get_remaining_indices(position_indices, flow.shape[:2]):
         delta = flow[row, col]
-        trajectories['deltas'].append([left_pad(np.array(delta), [np.nan, np.nan], frames_so_far)])
-        trajectories['positions'].append([np.array([row, col]) + np.floor(delta)])
+        trajectories['deltas'].append(left_pad([np.array(delta)], np.nan, frames_so_far))
+        trajectories['positions'].append(np.array([col, row]) + np.floor(delta))
 
 def flow_into_trajectories(flow, trajectories):
     for index, pos in enumerate(trajectories['positions']):

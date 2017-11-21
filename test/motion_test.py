@@ -6,15 +6,30 @@ import motion as m
 
 
 def test__get_remaining_indices():
+    """Returns a set difference of the indices for the specified matrix shape"""
     assert m._get_remaining_indices([np.array(coll) for coll in [[1.0, 1.0], [0.0, 0.0]]], (2, 2)) == [[0, 1], [1, 0]]
 
-def test__init_missing_trajectories():
-    flow = np.array([[[1.0, 0.0], [0.0, -1.0]],
-                     [[0.0, 1.0], [-1.0, 0.0]]])
+def test__init_missing_trajectories_1():
+    """Mutates the trajectories to initialize trajectories"""
+    flow = np.array([[[0.0, 1.0], [-1.0, 0.0]],
+                     [[1.0, 0.0], [0.0, -1.0]]])
     trajectories = {'positions': [np.array(coll) for coll in []],
                     'deltas': [np.array(coll) for coll in []]}
     m._init_missing_trajectories(flow, trajectories)
-    assert_equal( trajectories, {
-        'positions': [[np.array(coll)] for coll in [[1.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0]]],
-        'deltas': [[[1.0, 0.0]], [[0.0, -1.0]], [[0.0, 1.0]], [[-1.0, 0.0]]]
+    assert_equal(trajectories, {
+        'positions': [np.array(coll) for coll in [[0.0, 1.0], [0.0, 0.0], [1.0, 1.0], [1.0, 0.0]]],
+        'deltas': [[[0.0, 1.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[0.0, -1.0]]]
+    })
+
+def test__init_missing_trajectories_2():
+    """Mutates trajectories to create new trajectories but does not update existing ones"""
+    flow = np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                     [[1.0, 0.0], [-1.0, 0.0]]])
+    trajectories = {'positions': [np.array(coll) for coll in [[1.0, 0.0]]],
+                    'deltas': [[np.array(coll)] for coll in [[1.0, 0.0]]]}
+    m._init_missing_trajectories(flow, trajectories)
+    print(trajectories)
+    assert_equal(trajectories, {
+        'positions': [np.array(coll) for coll in [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]],
+        'deltas': [[[1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [-1.0, 0.0]]]
     })
