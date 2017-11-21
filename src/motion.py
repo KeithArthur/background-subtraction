@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.linalg as la
 import cv2
 
 from utils import prev_cur_next, left_pad
@@ -41,12 +42,23 @@ def _update_trajectories(flow, trajectories):
         trajectories['positions'][index] += np.floor(delta)
         trajectories['deltas'][index].append(delta)
 
-def calc_trajectories(forward_flow, backward_flow):
-    trajectories = None
-    for flow, back in zip(forward_flow, backward_flow):
-        flow = cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0)
-        if trajectories is None:
-            trajectories = np.array([flow])
+def _flows_close(forward, backward):
+    return la.norm(forward + backward)**2 < 0.01 * la.norm(forward)**2 + la.norm(backward)**2 + 0.2
+
+def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
+    complete_trajectories = {'positions': [], 'deltas': []}
+    for index, pos in enumerate(trajectories['positions']):
+        col, row = np.int32(pos)
+        if _flows_close(forward_flow[row, col], backward_flow[row, col]):
+            complete_trajectories['positions'].append(trajectories['positions'].pop(index))
+            complete_trajectories['deltas'].append(trajectories['deltas'].pop(index))
+    return complete_trajectories
+
+def calc_trajectories(forward_flows, backward_flows):
+    trajectories = {'positions': [], 'deltas': []}
+    for forward_flow, backward_flow in zip(forward_flows, backward_flows):
+        _update_trajectories(forward_flow, trajectories)
+        _init_missing_trajectories(forward_flow, trajectories)
 
 # # params for ShiTomasi corner detection
 # feature_params = dict( maxCorners = 100,

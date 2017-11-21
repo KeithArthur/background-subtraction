@@ -44,3 +44,21 @@ def test__update_trajectories():
         'positions': [[0.0, 0.0]],
         'deltas': [[[1.0, 0.0], [-1.0, 0.0]]]
     })
+
+def test__end_occluded_trajectories():
+    """Mutates trajectories to remove occluded trajectories. Also returns the removed trajectories"""
+    forward_flow = np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                             [[1.0, 0.0], [-1.0, 0.0]]])
+    backward_flow = np.array([[[-1.0, 0.0], [-1.0, 0.0]],
+                              [[1.0, 0.0], [-1.0, 0.0]]])
+    trajectories = {'positions': [[0.0, 0.0]],
+                    'deltas': [[[-1.0, 0.0]]]}
+    complete_trajectories = m._end_occluded_trajectories(forward_flow, backward_flow, trajectories)
+    assert_equal(trajectories, {
+        'positions': [],
+        'deltas': []
+    })
+    assert_equal(complete_trajectories, {
+        'positions': [[0.0, 0.0]],
+        'deltas': [[[-1.0, 0.0]]]
+    })
