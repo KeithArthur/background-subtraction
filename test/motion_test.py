@@ -17,8 +17,8 @@ def test__init_missing_trajectories_1():
                     'deltas': []}
     m._init_missing_trajectories(flow, trajectories)
     assert_equal(trajectories, {
-        'positions': [[0.0, 1.0], [0.0, 0.0], [1.0, 1.0], [1.0, 0.0]],
-        'deltas': [[[0.0, 1.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[0.0, -1.0]]]
+        'positions': [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+        'deltas': [[], [], [], []]
     })
 
 def test__init_missing_trajectories_2():
@@ -28,9 +28,10 @@ def test__init_missing_trajectories_2():
     trajectories = {'positions': [np.array(coll) for coll in [[1.0, 0.0]]],
                     'deltas': [[np.array(coll)] for coll in [[1.0, 0.0]]]}
     m._init_missing_trajectories(flow, trajectories)
+    print(trajectories)
     assert_equal(trajectories, {
-        'positions': [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
-        'deltas': [[[1.0, 0.0]], [[1.0, 0.0]], [[1.0, 0.0]], [[-1.0, 0.0]]]
+        'positions': [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+        'deltas': [[[1.0, 0.0]], [np.nan], [np.nan], [np.nan]]
     })
 
 def test__init_missing_trajectories_3():
@@ -43,8 +44,8 @@ exist."""
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]]]}
     m._init_missing_trajectories(flow, trajectories)
     assert_equal(trajectories, {
-        'positions': [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
-        'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [-1.0, 0.0]]]
+        'positions': [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+        'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, np.nan], [np.nan, np.nan], [np.nan, np.nan]]
     })
 
 def test__update_trajectories():

@@ -4,6 +4,9 @@ import cv2
 
 from utils import prev_cur_next, left_pad, extend_dict
 
+import platform
+project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
+
 def calc_flow(frames):
     flow = []
     for prev_frame, cur_frame, next_frame in prev_cur_next(frames):
@@ -33,8 +36,8 @@ def _init_missing_trajectories(flow, trajectories):
     position_indices = [np.flip(pos, 0) for pos in trajectories['positions']]
     for row, col in _get_remaining_indices(position_indices, flow.shape[:2]):
         delta = flow[row, col]
-        trajectories['deltas'].append(left_pad([np.array(delta)], np.nan, frames_so_far - 1))
-        trajectories['positions'].append(np.array([col, row]) + np.floor(delta))
+        trajectories['deltas'].append(left_pad([], np.nan, frames_so_far))
+        trajectories['positions'].append(np.array([col, row], dtype=project_float))
 
 def _update_trajectories(flow, trajectories):
     for index, pos in enumerate(trajectories['positions']):
@@ -58,11 +61,8 @@ def calc_trajectories(forward_flows, backward_flows):
     trajectories = {'positions': [], 'deltas': []}
     completed_trajectories = {'positions': [], 'deltas': []}
     for forward_flow, backward_flow in zip(forward_flows, backward_flows):
-        _update_trajectories(forward_flow, trajectories)
-        print(trajectories['positions'])
         _init_missing_trajectories(forward_flow, trajectories)
-        print(trajectories['positions'])
+        _update_trajectories(forward_flow, trajectories)
         extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
-        print(trajectories['positions'])
     extend_dict(completed_trajectories, trajectories)
     return completed_trajectories
