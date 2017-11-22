@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as la
 import cv2
 
-from utils import prev_cur_next, left_pad, extend_dict
+from utils import prev_cur_next, left_pad, extend_dict, enumerate_pairs_with_order
 
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
@@ -68,3 +68,35 @@ def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
         extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
     extend_dict(completed_trajectories, trajectories)
     return completed_trajectories
+
+def is_salient(trajectory_deltas):
+    positive_motion_P = {'horiz': 0, 'vert': 0}
+    negative_motion_N = {'horiz': 0, 'vert': 0}
+    without_nans = [delta for delta in trajectory_deltas if not np.isscalar(delta)]
+    for delta in without_nans:
+        if delta[0] > 0:
+            positive_motion_P['horiz'] += 1
+        else:
+            negative_motion_N['horiz'] += 1
+        if delta[1] > 0:
+            positive_motion_P['vert'] += 1
+        else:
+            negative_motion_N['vert'] += 1
+    return any(positive_motion_P.keys() + negative_motion_N.keys() > 0.8 * len(without_nans))
+
+def _deltas_to_positions(trajectories):
+    positions = []
+    for index, position in enumerate(trajectories['positions']):
+        trajectory_positions = [position]
+        without_nans = [delta for delta in trajectories['deltas'][index] if not np.isscalar(delta)]
+        for delta in without_nans:
+            trajectory_positions.append(trajectory_positions[-1] + delta)
+        positions.append(trajectory_positions)
+    return positions
+
+def calc_motion_saliencies(trajectories):
+    positions = _deltas_to_positions(trajectories)
+    saliencies = []
+    for trajectory_positions in positions:
+        saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
+    return saliencies

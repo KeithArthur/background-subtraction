@@ -16,3 +16,9 @@ def left_pad(coll, elem, num):
 def extend_dict(coll_to, coll_from):
     for key, val_list in coll_from.items():
         coll_to[key].extend(val_list)
+
+def enumerate_pairs_with_order(coll):
+    to_enumerate = []
+    for index, elem in enumerate(coll[:-1]):
+        to_enumerate.extend([(elem, other_elem) for other_elem in coll[index + 1:]])
+    return to_enumerate
