@@ -39,10 +39,12 @@ def _init_missing_trajectories(flow, trajectories):
         trajectories['deltas'].append(left_pad([], np.nan, frames_so_far))
         trajectories['positions'].append(np.array([col, row], dtype=project_float))
 
-def _update_trajectories(flow, trajectories):
+def _update_trajectories(flow, trajectories, frame_dimensions):
     for index, pos in enumerate(trajectories['positions']):
         delta = flow[int(pos[1]), int(pos[0])]
-        trajectories['positions'][index] += np.floor(delta)
+        trajectories['positions'][index] = np.clip(trajectories['positions'][index] + np.floor(delta),
+                                                   [0, 0],
+                                                   np.array(frame_dimensions) - 1)
         trajectories['deltas'][index].append(delta)
 
 def _flows_close(forward, backward):
@@ -57,12 +59,12 @@ def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
             complete_trajectories['deltas'].append(trajectories['deltas'].pop(index))
     return complete_trajectories
 
-def calc_trajectories(forward_flows, backward_flows):
+def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
     trajectories = {'positions': [], 'deltas': []}
     completed_trajectories = {'positions': [], 'deltas': []}
     for forward_flow, backward_flow in zip(forward_flows, backward_flows):
         _init_missing_trajectories(forward_flow, trajectories)
-        _update_trajectories(forward_flow, trajectories)
+        _update_trajectories(forward_flow, trajectories, frame_dimensions)
         extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
     extend_dict(completed_trajectories, trajectories)
     return completed_trajectories

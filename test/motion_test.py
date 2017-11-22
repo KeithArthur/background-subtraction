@@ -53,7 +53,7 @@ def test__update_trajectories():
                      [[1.0, 0.0], [-1.0, 0.0]]])
     trajectories = {'positions': [[1.0, 0.0]],
                     'deltas': [[[1.0, 0.0]]]}
-    m._update_trajectories(flow, trajectories)
+    m._update_trajectories(flow, trajectories, [2, 2])
     assert_equal(trajectories, {
         'positions': [[0.0, 0.0]],
         'deltas': [[[1.0, 0.0], [-1.0, 0.0]]]
@@ -91,7 +91,7 @@ def test_calc_trajectories_1():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows)
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
@@ -113,7 +113,7 @@ def test_calc_trajectories_2():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows)
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
