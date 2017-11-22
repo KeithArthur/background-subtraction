@@ -2,7 +2,7 @@ import numpy as np
 import numpy.linalg as la
 import cv2
 
-from utils import prev_cur_next, left_pad
+from utils import prev_cur_next, left_pad, extend_dict
 
 def calc_flow(frames):
     flow = []
@@ -29,11 +29,11 @@ def _get_remaining_indices(trajectories_current_positions, shape):
     return [index for index in all_indices if index not in positions]
 
 def _init_missing_trajectories(flow, trajectories):
-    frames_so_far = len(trajectories['deltas'])
+    frames_so_far = len(trajectories['deltas'][0]) if len(trajectories['deltas']) != 0 else 0
     position_indices = [np.flip(pos, 0) for pos in trajectories['positions']]
     for row, col in _get_remaining_indices(position_indices, flow.shape[:2]):
         delta = flow[row, col]
-        trajectories['deltas'].append(left_pad([np.array(delta)], np.nan, frames_so_far))
+        trajectories['deltas'].append(left_pad([np.array(delta)], np.nan, frames_so_far - 1))
         trajectories['positions'].append(np.array([col, row]) + np.floor(delta))
 
 def _update_trajectories(flow, trajectories):
@@ -56,35 +56,13 @@ def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
 
 def calc_trajectories(forward_flows, backward_flows):
     trajectories = {'positions': [], 'deltas': []}
+    completed_trajectories = {'positions': [], 'deltas': []}
     for forward_flow, backward_flow in zip(forward_flows, backward_flows):
         _update_trajectories(forward_flow, trajectories)
+        print(trajectories['positions'])
         _init_missing_trajectories(forward_flow, trajectories)
-
-# # params for ShiTomasi corner detection
-# feature_params = dict( maxCorners = 100,
-#                        qualityLevel = 0.3,
-#                        minDistance = 7,
-#                        blockSize = 7 )
-# # Parameters for lucas kanade optical flow
-# lk_params = dict( winSize  = (15,15),
-#                   maxLevel = 2,
-#                   criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-
-# old_frame = all_frames[..., 0]
-# old_gray = old_frame
-# p0 = cv2.goodFeaturesToTrack(old_gray, mask = None, **feature_params)
-
-# i = 1
-# while(1):
-#     frame = all_frames[..., i]
-#     frame_gray = frame
-#     # calculate optical flow
-#     p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, frame_gray, p0, None, **lk_params)
-#     # Select good points
-#     good_new = p1[st==1]
-#     good_old = p0[st==1]
-#     # draw the tracks
-#     # Now update the previous frame and previous points
-#     old_gray = frame_gray.copy()
-#     p0 = good_new.reshape(-1,1,2)
-# cv2.destroyAllWindows()
+        print(trajectories['positions'])
+        extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
+        print(trajectories['positions'])
+    extend_dict(completed_trajectories, trajectories)
+    return completed_trajectories

@@ -12,3 +12,7 @@ def left_pad(coll, elem, num):
         return np.append([elem for i in range(num)], coll)
     else:
         return [elem for i in range(num)] + coll
+
+def extend_dict(coll_to, coll_from):
+    for key, val_list in coll_from.items():
+        coll_to[key].extend(val_list)

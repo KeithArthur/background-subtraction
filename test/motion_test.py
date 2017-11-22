@@ -30,7 +30,21 @@ def test__init_missing_trajectories_2():
     m._init_missing_trajectories(flow, trajectories)
     assert_equal(trajectories, {
         'positions': [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
-        'deltas': [[[1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [-1.0, 0.0]]]
+        'deltas': [[[1.0, 0.0]], [[1.0, 0.0]], [[1.0, 0.0]], [[-1.0, 0.0]]]
+    })
+
+def test__init_missing_trajectories_3():
+    """Mutates trajectories to create new trajectories but does not update
+existing ones. Adds nans for frames where the trajectory did not
+exist."""
+    flow = np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                     [[1.0, 0.0], [-1.0, 0.0]]])
+    trajectories = {'positions': [np.array(coll) for coll in [[1.0, 0.0]]],
+                    'deltas': [[[1.0, 0.0], [0.0, 0.0]]]}
+    m._init_missing_trajectories(flow, trajectories)
+    assert_equal(trajectories, {
+        'positions': [[1.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]],
+        'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [1.0, 0.0]], [np.nan, [-1.0, 0.0]]]
     })
 
 def test__update_trajectories():
@@ -62,3 +76,48 @@ def test__end_occluded_trajectories():
         'positions': [[0.0, 0.0]],
         'deltas': [[[-1.0, 0.0]]]
     })
+
+def test_calc_trajectories_1():
+    """Returns trajectories for each pair of flows"""
+    forward_flows = [np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]]),
+                     np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]]),
+                     np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]])]
+    backward_flows = [np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]]),
+                      np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]]),
+                      np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]])]
+    trajectories = m.calc_trajectories(forward_flows, backward_flows)
+    assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
+                                          [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
+                                          [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
+                                          [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]]])
+    assert_equal(trajectories['positions'], [[1.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0]])
+
+
+def test_calc_trajectories_2():
+    """Returns trajectories for each pair of flows, terminating any occluded trajectories"""
+    forward_flows = [np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]]),
+                     np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]]),
+                     np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                               [[1.0, 0.0], [-1.0, 0.0]]])]
+    backward_flows = [np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]]),
+                      np.array([[[-1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]]),
+                      np.array([[[1.0, 0.0], [-1.0, 0.0]],
+                                [[1.0, 0.0], [-1.0, 0.0]]])]
+    trajectories = m.calc_trajectories(forward_flows, backward_flows)
+    print(trajectories)
+    assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0]],
+                                          [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
+                                          [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
+                                          [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
+                                          [np.nan, np.nan, [1.0, 0.0]]])
+    assert_equal(trajectories['positions'], [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0], [1.0, 0.0]])
