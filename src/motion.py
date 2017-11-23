@@ -90,7 +90,7 @@ def _deltas_to_positions(trajectories):
         trajectory_positions = [position]
         without_nans = [delta for delta in trajectories['deltas'][index] if not np.isscalar(delta)]
         for delta in without_nans:
-            trajectory_positions.append(trajectory_positions[-1] + delta)
+            trajectory_positions.append(trajectory_positions[-1] + np.floor(delta))
         positions.append(trajectory_positions)
     return positions
 

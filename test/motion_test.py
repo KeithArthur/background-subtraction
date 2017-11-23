@@ -129,6 +129,7 @@ def test__deltas_to_positions():
                                                         [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
 
 def test_calc_motion_saliencies():
+    """returns a list of the motion saliencies"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
     assert_equal(m.calc_motion_saliencies(trajectories), [1.0, 0, 0, 0])
