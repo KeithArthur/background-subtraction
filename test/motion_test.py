@@ -122,10 +122,10 @@ def test_calc_trajectories_2():
     assert_equal(trajectories['positions'], [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0], [1.0, 0.0]])
 
 
-def test__deltas_to_positions():
+def test_deltas_to_positions():
     trajectories = {'deltas': [np.array(coll) for coll in [[[-1.0, 0.0], [-1.0, 1.0]], [[0.0, -1.0], [0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
-    assert_equal(m._deltas_to_positions(trajectories), [[[0.0, 0.0], [-1.0, 0.0], [-2.0, 1.0]],
+    assert_equal(m.deltas_to_positions(trajectories), [[[0.0, 0.0], [-1.0, 0.0], [-2.0, 1.0]],
                                                         [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
 
 def test_calc_motion_saliencies():

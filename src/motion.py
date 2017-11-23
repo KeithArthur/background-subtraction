@@ -84,7 +84,7 @@ def is_salient(trajectory_deltas):
             negative_motion_N['vert'] += 1
     return any(positive_motion_P.keys() + negative_motion_N.keys() > 0.8 * len(without_nans))
 
-def _deltas_to_positions(trajectories):
+def deltas_to_positions(trajectories):
     positions = []
     for index, position in enumerate(trajectories['positions']):
         trajectory_positions = [position]
@@ -95,7 +95,7 @@ def _deltas_to_positions(trajectories):
     return positions
 
 def calc_motion_saliencies(trajectories):
-    positions = _deltas_to_positions(trajectories)
+    positions = deltas_to_positions(trajectories)
     saliencies = []
     for trajectory_positions in positions:
         saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
