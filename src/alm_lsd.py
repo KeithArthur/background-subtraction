@@ -37,8 +37,7 @@ def inexact_alm_lsd(frames_D, graph, max_iterations=100):
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = alm_penalty_scalar_rho * dual_mu
         err.append(_calc_error(frames_D, background_L, foreground_S))
-        # if err[-1] < tolerance:
-        if len(err) > 100:
+        if err[-1] < tolerance:
             break
     return background_L, foreground_S, err
 
