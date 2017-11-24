@@ -21,7 +21,7 @@ def normalize_and_center_frames(frames):
     mean = np.mean(normalized_frames)
     return normalized_frames - mean, mean
 
-def restore_frames(frames, original_mean):
+def ___restore_frames(frames, original_mean):
     return np.int32(255.0 * (frames + original_mean))
 
 def foreground_mask(S, M, L):
@@ -33,4 +33,3 @@ def foreground_mask(S, M, L):
     sigma_s = np.std(S_sel)
     th = mu_s + 1.5*sigma_s
     Mask = S > th
-    return np.int32(Mask) * 255
