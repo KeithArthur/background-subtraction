@@ -31,7 +31,9 @@ def normalize_and_center_frames(frames):
     return normalized_frames - mean
 
 def restore_frames(flattend_frames, original_frames):
-    normalized_mean = np.mean(_normalize_frames(original_frames))
+    original_mean = np.mean(_normalize_frames(original_frames))
     video_data_shape = to_video_data(original_frames).shape
     frames = from_flattened_frames(flattend_frames, video_data_shape)
-    return np.int32(256 * (_normalize_frames(frames) + normalized_mean))
+    normalized_frames = _normalize_frames(frames)
+    with_mean  = normalized_frames + original_mean
+    return np.int32(256 * with_mean / with_mean.max())
