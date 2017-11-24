@@ -14,7 +14,7 @@ def _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regulariz
     foreground_G_S = frames_D - background_L + dual_Y / dual_mu
     
     #L1- norm
-    #return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
+    # return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
     
     #Structured Sparsity 
     return min_cost_flow(foreground_G_S, graph, regularization_lambda / dual_mu)
@@ -40,7 +40,6 @@ def inexact_alm_lsd(frames_D, graph, max_iterations=100):
     rk = min(num_pixels_n, num_frames_p)
     for t in range(max_iterations):
         background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, rk)
-        print rk
         foreground_S = _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = alm_penalty_scalar_rho * dual_mu
