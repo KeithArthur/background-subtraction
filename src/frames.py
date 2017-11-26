@@ -21,7 +21,14 @@ def normalize_and_center_frames(frames):
     mean = np.mean(normalized_frames)
     return normalized_frames - mean, mean
 
-def restore_frames(frames, original_mean):
+# 48 X (image) -> 48 X ( Flattened vector ) -> Transpose, Column first counting
+def frames_to_matrix(M, frame_n, frame_d):
+    return M.transpose(0,2,1).reshape(frame_n, np.prod(frame_d)).T
+    
+def matrix_to_frames(M, frame_n, frame_d):
+    return M.T.reshape(frame_n,frame_d[1],frame_d[0]).transpose(0,2,1)
+
+def restore_background(frames, original_mean):
     return np.int32(255.0 * (frames + original_mean))
 
 def foreground_mask(S, M, L):
