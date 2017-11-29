@@ -90,8 +90,8 @@ def deltas_to_positions(trajectories):
         trajectory_positions = [position]
         without_nans = [delta for delta in trajectories['deltas'][index] if not np.isscalar(delta)]
         for delta in without_nans:
-            trajectory_positions.append(trajectory_positions[-1] + np.floor(delta))
-        positions.append(trajectory_positions)
+            trajectory_positions.append(trajectory_positions[-1] - np.floor(delta))
+        positions.append(list(reversed(trajectory_positions)))
     return positions
 
 def calc_motion_saliencies(trajectories):
@@ -100,3 +100,14 @@ def calc_motion_saliencies(trajectories):
     for trajectory_positions in positions:
         saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
     return saliencies
+
+def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
+    trajectory_positions = deltas_to_positions(trajectories)
+    pixel_trajectory_lookup = np.empty(video_data_dimensions)
+    for trajectory_num, trajectory in enumerate(trajectory_positions):
+        for index, position in enumerate(trajectory):
+            row = int(position[0])
+            col = int(position[1])
+            pixel_trajectory_lookup[row, col, index] = trajectory_num
+    return pixel_trajectory_lookup
+
