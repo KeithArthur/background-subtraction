@@ -14,10 +14,10 @@ def _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regulariz
     foreground_G_S = frames_D - background_L + dual_Y / dual_mu
     
     #L1- norm
-    # return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
+    return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
     
     #Structured Sparsity 
-    return min_cost_flow(foreground_G_S, graph, regularization_lambda / dual_mu)
+    #return min_cost_flow(foreground_G_S, graph, regularization_lambda / dual_mu)
 
 def _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S):
     return dual_Y + dual_mu * (frames_D - background_L - foreground_S)
