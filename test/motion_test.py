@@ -133,3 +133,20 @@ def test_calc_motion_saliencies():
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
     assert_equal(m.calc_motion_saliencies(trajectories), [1.0, 0, 0, 0])
+
+
+def test_calc_regularization_lambdas():
+    frame_dimensions = (10, 10)
+    first_frame_groups = [[[0.0, 0.0], [1.0, 0.0], [2.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+                          [[10.0, 0.0], [11.0, 0.0], [12.0, 0.0], [10.0, 1.0], [11.0, 1.0]]]
+    second_frame_groups = [[[0.0, 0.0], [1.0, 0.0], [2.0, 0.0], [0.0, 1.0], [1.0, 1.0]],
+                           [[10.0, 0.0], [11.0, 0.0], [12.0, 0.0], [10.0, 1.0], [11.0, 1.0]]]
+    groups = [first_frame_groups, second_frame_groups]
+    trajectories = {'positions': [[2.0, 0.0], [0.0, 0.0], [10.0, 2.0]],
+                    'deltas': [[[1.0, 0.0], [1.0, 0.0]], [[-1.0, -1.0], [-1.0, -1.0]], [[9.0, 0.0], [1.0, 2.0]]]}
+    trajectory_saliencies = [np.norm(np.sum(deltas, axis=1)) for deltas in trajectories['deltas']]
+    group_saliencies = [[np.average(trajectory_saliencies[:2]), 0],
+                        [np.average(trajectory_saliencies[:2]), 0]]
+    regularization_lambdas = m.calc_regularization_lambdas(groups, trajectories, frame_dimensions)
+    assert_equal(regularization_lambdas, [[0.1 * np.min(group_saliencies) / salience / np.max(frame_dimensions) for salience in group] \
+                                          for group in group_saliencies])
