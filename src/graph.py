@@ -20,6 +20,6 @@ def build_graph(frame_dimensions, batch_dimensions):
         indiMatrix = np.zeros((frame_height_m, frame_width_n))
         indX = i % num_x
         indY = i / num_x
-        indiMatrix[indY:indY+batch_height, indX:indX+batch_width] = True
+        indiMatrix[indX:indX+batch_height, indY:indY+batch_width] = True
         graph['groups_var'][np.where(indiMatrix.ravel()), i] = True
     return graph
