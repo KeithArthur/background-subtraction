@@ -94,7 +94,7 @@ def deltas_to_positions(trajectories):
         positions.append(list(reversed(trajectory_positions)))
     return positions
 
-def calc_motion_saliencies(trajectories):
+def calc_trajectory_saliencies(trajectories):
     positions = deltas_to_positions(trajectories)
     saliencies = []
     for trajectory_positions in positions:
@@ -110,4 +110,7 @@ def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
             col = int(position[1])
             pixel_trajectory_lookup[row, col, index] = trajectory_num
     return pixel_trajectory_lookup
+
+def get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
+    return np.vectorize(lambda trajectory_num: trajectory_saliencies[trajectory_num])(pixel_trajectory_lookup)
 

@@ -128,11 +128,11 @@ def test_deltas_to_positions():
     assert_equal(m.deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, 0.0], [0.0, 0.0]],
                                                         [[0.0, 1.0], [0.0, 2.0], [0.0, 1.0]]])
 
-def test_calc_motion_saliencies():
+def test_calc_trajectory_saliencies():
     """returns a list of the motion saliencies"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m.calc_motion_saliencies(trajectories), [1.0, 0, 0, 0])
+    assert_equal(m.calc_trajectory_saliencies(trajectories), [1.0, 0, 0, 0])
 
 
 def test_get_pixel_trajectory_lookup():
@@ -143,4 +143,10 @@ def test_get_pixel_trajectory_lookup():
                                             [3, 1]],
                                            [[0, 2],
                                             [1, 3]]])
+
+def test_get_pixel_saliencies():
+    trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
+    pixel_trajectory_lookup = [[[2, 0], [3, 1]]]
+    pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    assert_equal(pixel_saliencies, [[[0.5, 1.0], [3.0, 2.0]]])
 
