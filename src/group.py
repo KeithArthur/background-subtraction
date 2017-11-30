@@ -38,3 +38,9 @@ def find_groups(fg_images, num_frames, f_dim):
                 groups.append({'frame':frame_num, 'elems':gr_list})
                 
     return groups
+
+def keep_only_in_group(mat, group_elems):
+    filtered_mat = np.zeros_like(mat)
+    for index in group_elems:
+        filtered_mat[index[0]][index[1]] = mat[index[0]][index[1]]
+    return filtered_mat

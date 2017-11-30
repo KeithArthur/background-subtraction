@@ -27,7 +27,10 @@ def test_find_groups():
     
     assert_equal(ginfo[3]['frame'], 1)
     assert_equal(ginfo[3]['elems'], [[0,3], [0,4]])
-    
-    
-if __name__ == "__main__":
-    test_find_groups()
+
+
+def test_keep_only_in_group():
+    mat = np.array([[1, 2], [3, 4]])
+    group = {'frame': 0, 'elems': [[0, 1], [1, 1]]}
+    filtered_mat = g.keep_only_in_group(mat, group['elems'])
+    assert_equal(filtered_mat, [[0, 2], [0, 4]])
