@@ -76,13 +76,22 @@ def is_salient(trajectory_deltas):
     for delta in without_nans:
         if delta[0] > 0:
             positive_motion_P['horiz'] += 1
-        else:
+        elif delta[0] < 0:
             negative_motion_N['horiz'] += 1
         if delta[1] > 0:
             positive_motion_P['vert'] += 1
-        else:
+        elif delta[1] < 0:
             negative_motion_N['vert'] += 1
-    return any(positive_motion_P.keys() + negative_motion_N.keys() > 0.8 * len(without_nans))
+    return any(np.add(positive_motion_P.values(), negative_motion_N.values()) > 0.8 * len(without_nans))
+
+def get_inconsistent_trajectory_nums(trajectories):
+    trajectory_nums = []
+    for index, deltas in enumerate(trajectories['deltas']):
+        if is_salient(deltas):
+            continue
+        else:
+            trajectory_nums.append(index)
+    return trajectory_nums
 
 def deltas_to_positions(trajectories):
     positions = []

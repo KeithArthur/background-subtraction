@@ -128,6 +128,15 @@ def test_deltas_to_positions():
     assert_equal(m.deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, 0.0], [0.0, 0.0]],
                                                         [[0.0, 1.0], [0.0, 2.0], [0.0, 1.0]]])
 
+def test_is_salient():
+    assert m.is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
+    assert not m.is_salient(np.array([[0.0, -1.0], [0.0, 0.0]]))
+
+def test_get_inconsistent_trajectory_nums():
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, -1.0], [0.0, 0.0]], [[-1.0, 0.0], [-1.0, 1.0]]]]}
+    inconsistent_trajectory_nums = m.get_inconsistent_trajectory_nums(trajectories)
+    assert inconsistent_trajectory_nums == [0]
+
 def test_calc_trajectory_saliencies():
     """returns a list of the motion saliencies"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
