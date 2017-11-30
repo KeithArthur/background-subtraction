@@ -144,7 +144,7 @@ def test_calc_trajectory_saliencies():
     assert_equal(m.calc_trajectory_saliencies(trajectories), [1.0, 0, 0, 0])
 
 
-def test_get_pixel_trajectory_lookup():
+def test_get_pixel_trajectory_lookup_1():
     trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[1.0, 0.0]]],
                     'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]}
     pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
@@ -152,6 +152,17 @@ def test_get_pixel_trajectory_lookup():
                                             [3, 1]],
                                            [[0, 2],
                                             [1, 3]]])
+
+
+def test_get_pixel_trajectory_lookup_2():
+    """-1 wherever a trajectory does not pass through. This is to set a saliency of 0 later."""
+    trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]]],
+                    'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}
+    pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    assert_equal(pixel_trajectory_lookup, [[[2, 0],
+                                            [-1, 1]],
+                                           [[0, 2],
+                                            [1, -1]]])
 
 
 def test_get_pixel_saliencies_1():
