@@ -112,7 +112,7 @@ def calc_trajectory_saliencies(trajectories):
 
 def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
     trajectory_positions = deltas_to_positions(trajectories)
-    pixel_trajectory_lookup = np.empty(video_data_dimensions)
+    pixel_trajectory_lookup = np.ones(video_data_dimensions) * -1
     for trajectory_num, trajectory in enumerate(trajectory_positions):
         for index, position in enumerate(trajectory):
             row = int(position[0])
@@ -121,5 +121,12 @@ def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
     return pixel_trajectory_lookup
 
 def get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
-    return np.vectorize(lambda trajectory_num: trajectory_saliencies[trajectory_num])(pixel_trajectory_lookup)
+    non_salient_regularization_lambda = 10.0
+    pixel_saliencies = np.zeros_like(pixel_trajectory_lookup, dtype=project_float)
+    for index, trajectory_num in np.ndenumerate(pixel_trajectory_lookup):
+        if trajectory_num >= 0:
+            pixel_saliencies[index] = trajectory_saliencies[trajectory_num]
+        else:
+            pixel_saliencies[index] = non_salient_regularization_lambda
+    return pixel_saliencies
 

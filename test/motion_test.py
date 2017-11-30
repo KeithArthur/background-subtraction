@@ -153,9 +153,17 @@ def test_get_pixel_trajectory_lookup():
                                            [[0, 2],
                                             [1, 3]]])
 
-def test_get_pixel_saliencies():
+
+def test_get_pixel_saliencies_1():
     trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
     pixel_trajectory_lookup = [[[2, 0], [3, 1]]]
     pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     assert_equal(pixel_saliencies, [[[0.5, 1.0], [3.0, 2.0]]])
+
+def test_get_pixel_saliencies_2():
+    trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
+    pixel_trajectory_lookup = [[[2, -1], [3, 1]]]
+    pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    assert_equal(pixel_saliencies, [[[0.5, 10.0], [3.0, 2.0]]])
+
 
