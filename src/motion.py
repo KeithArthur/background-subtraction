@@ -11,8 +11,8 @@ project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
 
 def _get_remaining_indices(trajectories_current_positions, shape):
     all_indices = np.indices(shape).reshape(2, np.prod(shape)).T.astype(np.int32).tolist()
-    positions = [coll.tolist() for coll in trajectories_current_positions]
-    return [index for index in all_indices if index not in positions]
+    positions = {tuple(coll.tolist()) for coll in trajectories_current_positions}
+    return [index for index in all_indices if tuple(index) not in positions]
 
 def _init_missing_trajectories(flow, trajectories):
     frames_so_far = len(trajectories['deltas'][0]) if len(trajectories['deltas']) != 0 else 0
