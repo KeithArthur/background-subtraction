@@ -8,24 +8,6 @@ import group as g
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
 
-def calc_flow(frames):
-    flow = []
-    for prev_frame, cur_frame, next_frame in prev_cur_next(frames):
-        if next_frame is None:
-            break
-        flow.append(cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
-    return np.array(flow)
-
-
-def calc_forward_backward_flow(frames):
-    forward_flow = []
-    backward_flow = []
-    for prev_frame, cur_frame, next_frame in prev_cur_next(frames):
-        if prev_frame != None:
-            backward_flow.append(cv2.calcOpticalFlowFarneback(prev_frame, cur_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
-        if next_frame != None:
-            forward_flow.append(cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
-    return np.array(forward_flow, backward_flow)
 
 def _get_remaining_indices(trajectories_current_positions, shape):
     all_indices = np.indices(shape).reshape(2, np.prod(shape)).T.astype(np.int32).tolist()
@@ -60,17 +42,7 @@ def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
             complete_trajectories['deltas'].append(trajectories['deltas'].pop(index))
     return complete_trajectories
 
-def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
-    trajectories = {'positions': [], 'deltas': []}
-    completed_trajectories = {'positions': [], 'deltas': []}
-    for forward_flow, backward_flow in zip(forward_flows, backward_flows):
-        _init_missing_trajectories(forward_flow, trajectories)
-        _update_trajectories(forward_flow, trajectories, frame_dimensions)
-        extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
-    extend_dict(completed_trajectories, trajectories)
-    return completed_trajectories
-
-def is_salient(trajectory_deltas):
+def _is_salient(trajectory_deltas):
     positive_motion_P = {'horiz': 0, 'vert': 0}
     negative_motion_N = {'horiz': 0, 'vert': 0}
     without_nans = [delta for delta in trajectory_deltas if not np.isscalar(delta)]
@@ -85,16 +57,16 @@ def is_salient(trajectory_deltas):
             negative_motion_N['vert'] += 1
     return any(np.add(positive_motion_P.values(), negative_motion_N.values()) > 0.8 * len(without_nans))
 
-def get_inconsistent_trajectory_nums(trajectories):
+def _get_inconsistent_trajectory_nums(trajectories):
     trajectory_nums = []
     for index, deltas in enumerate(trajectories['deltas']):
-        if is_salient(deltas):
+        if _is_salient(deltas):
             continue
         else:
             trajectory_nums.append(index)
     return trajectory_nums
 
-def deltas_to_positions(trajectories):
+def _deltas_to_positions(trajectories):
     positions = []
     for index, position in enumerate(trajectories['positions']):
         trajectory_positions = [position]
@@ -104,10 +76,10 @@ def deltas_to_positions(trajectories):
         positions.append(list(reversed(trajectory_positions)))
     return positions
 
-def calc_trajectory_saliencies(trajectories):
-    positions = deltas_to_positions(trajectories)
+def _calc_trajectory_saliencies(trajectories):
+    positions = _deltas_to_positions(trajectories)
     saliencies = []
-    inconsistent_trajectory_nums = get_inconsistent_trajectory_nums(trajectories)
+    inconsistent_trajectory_nums = _get_inconsistent_trajectory_nums(trajectories)
     for trajectory_num, trajectory_positions in enumerate(positions):
         if trajectory_num in inconsistent_trajectory_nums:
             saliencies.append(0)
@@ -115,8 +87,8 @@ def calc_trajectory_saliencies(trajectories):
             saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
     return saliencies
 
-def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
-    trajectory_positions = deltas_to_positions(trajectories)
+def _get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
+    trajectory_positions = _deltas_to_positions(trajectories)
     pixel_trajectory_lookup = np.ones(video_data_dimensions, dtype=np.int32) * -1
     for trajectory_num, trajectory in enumerate(trajectory_positions):
         for index, position in enumerate(trajectory):
@@ -125,7 +97,7 @@ def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
             pixel_trajectory_lookup[index, row, col] = trajectory_num
     return pixel_trajectory_lookup
 
-def get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
+def _get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
     non_salient_value = 0.0
     pixel_saliencies = np.zeros_like(pixel_trajectory_lookup, dtype=project_float)
     for index, trajectory_num in np.ndenumerate(pixel_trajectory_lookup):
@@ -135,10 +107,30 @@ def get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
             pixel_saliencies[index] = non_salient_value
     return pixel_saliencies
 
+def calc_forward_backward_flow(frames):
+    forward_flow = []
+    backward_flow = []
+    for prev_frame, cur_frame, next_frame in prev_cur_next(frames):
+        if prev_frame != None:
+            backward_flow.append(cv2.calcOpticalFlowFarneback(prev_frame, cur_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
+        if next_frame != None:
+            forward_flow.append(cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
+    return np.array(forward_flow, backward_flow)
+
+def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
+    trajectories = {'positions': [], 'deltas': []}
+    completed_trajectories = {'positions': [], 'deltas': []}
+    for forward_flow, backward_flow in zip(forward_flows, backward_flows):
+        _init_missing_trajectories(forward_flow, trajectories)
+        _update_trajectories(forward_flow, trajectories, frame_dimensions)
+        extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
+    extend_dict(completed_trajectories, trajectories)
+    return completed_trajectories
+
 def set_groups_saliencies(groups, trajectories, video_data_dimensions):
-    pixel_trajectory_lookup = get_pixel_trajectory_lookup(trajectories, video_data_dimensions)
-    trajectory_saliencies = calc_trajectory_saliencies(trajectories)
-    pixel_saliencies = get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    pixel_trajectory_lookup = _get_pixel_trajectory_lookup(trajectories, video_data_dimensions)
+    trajectory_saliencies = _calc_trajectory_saliencies(trajectories)
+    pixel_saliencies = _get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     for group in groups:
         group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['elems'])

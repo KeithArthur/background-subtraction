@@ -122,74 +122,74 @@ def test_calc_trajectories_2():
     assert_equal(trajectories['positions'], [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0], [1.0, 0.0]])
 
 
-def test_deltas_to_positions():
+def test__deltas_to_positions():
     trajectories = {'deltas': [np.array(coll) for coll in [[[-1.0, 0.0], [-1.0, 1.0]], [[0.0, -1.0], [0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
-    assert_equal(m.deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
+    assert_equal(m._deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
                                                         [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
 
-def test_is_salient():
-    assert m.is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
-    assert not m.is_salient(np.array([[0.0, -1.0], [0.0, 0.0]]))
+def test__is_salient():
+    assert m._is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
+    assert not m._is_salient(np.array([[0.0, -1.0], [0.0, 0.0]]))
 
-def test_get_inconsistent_trajectory_nums():
+def test__get_inconsistent_trajectory_nums():
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, -1.0], [0.0, 0.0]], [[-1.0, 0.0], [-1.0, 1.0]]]]}
-    inconsistent_trajectory_nums = m.get_inconsistent_trajectory_nums(trajectories)
+    inconsistent_trajectory_nums = m._get_inconsistent_trajectory_nums(trajectories)
     assert inconsistent_trajectory_nums == [0]
 
-def test_calc_trajectory_saliencies_1():
+def test__calc_trajectory_saliencies_1():
     """returns a list of the motion saliencies"""
     trajectories = {'positions': [np.array(col) for col in [[10.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[5.0, 0.0], [5.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m.calc_trajectory_saliencies(trajectories), [10.0, 0, 0, 0])
+    assert_equal(m._calc_trajectory_saliencies(trajectories), [10.0, 0, 0, 0])
 
 
-def test_calc_trajectory_saliencies_2():
+def test__calc_trajectory_saliencies_2():
     """appends 0 for inconsistent motion"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m.calc_trajectory_saliencies(trajectories), [0.0, 0, 0, 0])
+    assert_equal(m._calc_trajectory_saliencies(trajectories), [0.0, 0, 0, 0])
 
 
-def test_get_pixel_trajectory_lookup_1():
+def test__get_pixel_trajectory_lookup_1():
     trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[1.0, 0.0]]],
                     'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]}
-    pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
     assert_equal(pixel_trajectory_lookup, [[[2, 0],
                                             [3, 1]],
                                            [[0, 2],
                                             [1, 3]]])
 
 
-def test_get_pixel_trajectory_lookup_2():
+def test__get_pixel_trajectory_lookup_2():
     """-1 wherever a trajectory does not pass through. This is to set a saliency of 0 later."""
     trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]]],
                     'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}
-    pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
     assert_equal(pixel_trajectory_lookup, [[[2, 0],
                                             [-1, 1]],
                                            [[0, 2],
                                             [1, -1]]])
 
-def test_get_pixel_trajectory_lookup_3():
+def test__get_pixel_trajectory_lookup_3():
     trajectories = {'deltas': [[[1.0, 0.0]]],
                     'positions': [[1.0, 0.0]]}
-    pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
     assert_equal(pixel_trajectory_lookup, [[[0, -1],
                                             [-1, -1]],
                                            [[-1, 0],
                                             [-1, -1]]])
 
-def test_get_pixel_saliencies_1():
+def test__get_pixel_saliencies_1():
     trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
     pixel_trajectory_lookup = [[[2, 0], [3, 1]]]
-    pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    pixel_saliencies = m._get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     assert_equal(pixel_saliencies, [[[0.5, 1.0], [3.0, 2.0]]])
 
-def test_get_pixel_saliencies_2():
+def test__get_pixel_saliencies_2():
     trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
     pixel_trajectory_lookup = [[[2, -1], [3, 1]]]
-    pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    pixel_saliencies = m._get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     assert_equal(pixel_saliencies, [[[0.5, 0.0], [3.0, 2.0]]])
 
 
