@@ -137,11 +137,18 @@ def test_get_inconsistent_trajectory_nums():
     inconsistent_trajectory_nums = m.get_inconsistent_trajectory_nums(trajectories)
     assert inconsistent_trajectory_nums == [0]
 
-def test_calc_trajectory_saliencies():
+def test_calc_trajectory_saliencies_1():
     """returns a list of the motion saliencies"""
+    trajectories = {'positions': [np.array(col) for col in [[10.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
+                    'deltas': [[[5.0, 0.0], [5.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
+    assert_equal(m.calc_trajectory_saliencies(trajectories), [10.0, 0, 0, 0])
+
+
+def test_calc_trajectory_saliencies_2():
+    """appends 0 for inconsistent motion"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m.calc_trajectory_saliencies(trajectories), [1.0, 0, 0, 0])
+    assert_equal(m.calc_trajectory_saliencies(trajectories), [0.0, 0, 0, 0])
 
 
 def test_get_pixel_trajectory_lookup_1():
@@ -227,3 +234,11 @@ def test_set_groups_saliencies_4():
     assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
                           {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}])
 
+
+def test_set_regularization_lambdas():
+    groups = [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
+              {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}]
+    video_data_dimensions = (2, 2, 2)
+    m.set_regularization_lambdas(groups, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5, 'regularization_lambda': 1.0/np.sqrt(2) * 0.1},
+                          {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0, 'regularization_lambda': 0.5/np.sqrt(2) * 0.1}])

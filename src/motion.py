@@ -107,8 +107,12 @@ def deltas_to_positions(trajectories):
 def calc_trajectory_saliencies(trajectories):
     positions = deltas_to_positions(trajectories)
     saliencies = []
-    for trajectory_positions in positions:
-        saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
+    inconsistent_trajectory_nums = get_inconsistent_trajectory_nums(trajectories)
+    for trajectory_num, trajectory_positions in enumerate(positions):
+        if trajectory_num in inconsistent_trajectory_nums:
+            saliencies.append(0)
+        else:
+            saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
     return saliencies
 
 def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
@@ -140,3 +144,9 @@ def set_groups_saliencies(groups, trajectories, video_data_dimensions):
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['elems'])
     return groups
 
+def set_regularization_lambdas(groups, video_data_dimensions):
+    min_salience = min([group['salience'] for group in groups])
+    normalization = min_salience / np.sqrt(np.max(video_data_dimensions[1:]))
+    for group in groups:
+        group['regularization_lambda'] = 0.1 * normalization / group['salience']
+    return groups
