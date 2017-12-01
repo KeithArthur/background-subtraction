@@ -140,5 +140,8 @@ def set_regularization_lambdas(groups, video_data_dimensions):
     min_salience = min([group['salience'] for group in groups])
     normalization = min_salience / np.sqrt(np.max(video_data_dimensions[1:]))
     for group in groups:
-        group['regularization_lambda'] = 0.1 * normalization / group['salience']
+        if group['salience'] == 0:
+            group['regularization_lambda'] = 10.0
+        else:
+            group['regularization_lambda'] = 0.1 * normalization / group['salience']
     return groups
