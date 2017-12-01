@@ -54,15 +54,15 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     G = frames_D - background_L + dual_Y / dual_mu
     ret_S = np.zeros_like(G)
     for i in range(len(group_info)):
-        rows = group_info[i]['index']
+        index = group_info[i]['index']
         frame_num = group_info[i]['frame']
         thresh = group_info[i]['regularization_lambda'] / dual_mu
         
-        val = la.norm(G[rows, frame_num])
+        val = la.norm(G[index, frame_num])
         
         coeff = 0;
         if(val > thresh): coeff = (val - thresh)/val;
-        ret_S[rows, frame_num] = coeff * G[rows, frame_num]
+        ret_S[index, frame_num] = coeff * G[index, frame_num]
         
     return ret_S
 
@@ -71,6 +71,7 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
     tolerance = 1e-7
     err = []    
     num_pixels_n, num_frames_p = frames_D.shape
+    
     ref_lambda = 1.0 / np.sqrt(num_pixels_n)
     mu0 = 12.5 / la.norm(frames_D, ord=2)
     

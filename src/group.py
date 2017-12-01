@@ -22,7 +22,7 @@ def find_groups(fg_images, num_frames, f_dim):
                 if( fg_images[frame_num][x0, y0] <= 0 or have_visited[x0, y0] == 1 ): 
                     continue
                 
-                gr_list, queue = [], [[x0,y0]]
+                gr_list, ind_list, queue = [], [], [[x0,y0]]
                 have_visited[x0, y0] = 1
                 
                 while(len(queue) > 0):
