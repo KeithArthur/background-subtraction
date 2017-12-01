@@ -14,6 +14,9 @@ import motion as m
 import group
 from alm_lsd import inexact_alm_lsd, inexact_alm_bs
 
+import cPickle as pickle
+import os.path
+
 def read_images(data_name):
     import glob
     import re
@@ -61,6 +64,13 @@ def main():
     bg_frames = f.restore_background(f.matrix_to_frames(background_L, num_frames, downsampled_frame_dimensions), original_mean)
     
     # Mask function needed
+    if os.path.isfile('save.p'):
+        trajectories = pickle.load(open( "save.p", "rb" ))
+    else:
+        optical_flows = m.calc_forward_backward_flow(frames_to_process)
+        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions)
+        pickle.dump(trajectories, open( "save.p", "wb" ))
+
     masked_S = f.foreground_mask(np.abs(foreground_S), frames_D, background_L)
     fg_frames = f.matrix_to_frames(masked_S, num_frames, downsampled_frame_dimensions)
     
