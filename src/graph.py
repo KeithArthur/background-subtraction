@@ -18,8 +18,8 @@ def build_graph(frame_dimensions, batch_dimensions):
              'groups_var': sp.csc_matrix(np.zeros((frame_height_m * frame_width_n, num_groups), dtype=np.bool), dtype=np.bool)}
     for i in range(0, num_groups):
         indiMatrix = np.zeros((frame_height_m, frame_width_n))
-        indX = i % num_x
-        indY = i / num_x
+        indX = i / num_y
+        indY = i % num_y
         indiMatrix[indX:indX+batch_height, indY:indY+batch_width] = True
         graph['groups_var'][np.where(indiMatrix.ravel()), i] = True
     return graph
