@@ -6,6 +6,7 @@ Created on Wed Nov 29 17:12:37 2017
 """
 
 import numpy as np
+import utils
 
 def check_inside_bound(x, y, f_dim):
     return x >= 0 and y >= 0 and x < f_dim[0] and y < f_dim[1]
@@ -27,6 +28,7 @@ def find_groups(fg_images, num_frames, f_dim):
                 while(len(queue) > 0):
                     x, y = queue.pop()
                     gr_list.append([x,y])
+                    ind_list.append(utils.index2d_to_1d(x,y,f_dim))
                     for dx, dy in search_dir:
                         if( check_inside_bound(x+dx, y+dy, f_dim) == False ):
                             continue
@@ -35,7 +37,7 @@ def find_groups(fg_images, num_frames, f_dim):
                             queue.append([x+dx, y+dy])
                             have_visited[x+dx, y+dy] = 1
     
-                groups.append({'frame':frame_num, 'elems':gr_list})
+                groups.append({'frame':frame_num, 'elems':gr_list, 'index': ind_list})
                 
     return groups
 

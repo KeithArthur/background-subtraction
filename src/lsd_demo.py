@@ -12,8 +12,7 @@ import frames as f
 import graph as g
 import motion as m
 import group
-import utils
-from alm_lsd import inexact_alm_lsd
+from alm_lsd import inexact_alm_lsd, inexact_alm_bs
 
 def read_images(data_name):
     import glob
@@ -76,6 +75,7 @@ def main():
     groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
     m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
+    final_L, final_S, err = inexact_alm_bs(frames_to_process, groups_info)
     #print (groups_info)
     
     fg_images = [PIL.Image.fromarray(frame) for frame in upsampled_fg]

@@ -54,20 +54,20 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     G = frames_D - background_L + dual_Y / dual_mu
     ret_S = np.zeros_like(G)
     for i in range(len(group_info)):
-        loc_i = group_info[i]['index_i']
-        loc_j = group_info[i]['index_j']
-        thresh = group_info[i]['lambda'] / dual_mu
+        rows = group_info[i]['index']
+        frame_num = group_info[i]['frame']
+        thresh = group_info[i]['regularization_lambda'] / dual_mu
         
-        val = la.norm(G[loc_i, loc_j])
+        val = la.norm(G[rows, frame_num])
         
         coeff = 0;
         if(val > thresh): coeff = (val - thresh)/val;
-        ret_S[loc_i, loc_j] = coeff * G[loc_i, loc_j]
+        ret_S[rows, frame_num] = coeff * G[rows, frame_num]
         
     return ret_S
 
 def inexact_alm_bs(frames_D, group_info, max_iterations=100):
-    alm_penalty_scalar_rho = 1.5
+    alm_penalty_scalar_rho = 1.1
     tolerance = 1e-7
     err = []    
     num_pixels_n, num_frames_p = frames_D.shape
@@ -79,12 +79,14 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
     foreground_S = np.zeros_like(frames_D) # E in reference code
     background_L = np.zeros_like(frames_D) # A in reference code
     
+    rk = min(num_pixels_n, num_frames_p)
     for t in range(max_iterations):
-        background_L = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S)
+        background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, rk)
         foreground_S = _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = min(alm_penalty_scalar_rho * dual_mu, tolerance * mu0)
         err.append(_calc_error(frames_D, background_L, foreground_S))
         if err[-1] < tolerance:
             break
+        
     return background_L, foreground_S, err
