@@ -31,7 +31,7 @@ def _update_trajectories(flow, trajectories, frame_dimensions):
         trajectories['deltas'][index].append(delta)
 
 def _flows_close(forward, backward):
-    return la.norm(forward + backward)**2 < 0.01 * la.norm(forward)**2 + la.norm(backward)**2 + 0.2
+    return np.sum((forward + backward)**2) < 0.01 * (np.sum(forward**2) + np.sum(backward**2)) + 0.2
 
 def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
     complete_trajectories = {'positions': [], 'deltas': []}
