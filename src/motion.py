@@ -3,6 +3,7 @@ import numpy.linalg as la
 import cv2
 
 from utils import prev_cur_next, left_pad, extend_dict, enumerate_pairs_with_order
+import group as g
 
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
@@ -98,7 +99,7 @@ def deltas_to_positions(trajectories):
     for index, position in enumerate(trajectories['positions']):
         trajectory_positions = [position]
         without_nans = [delta for delta in trajectories['deltas'][index] if not np.isscalar(delta)]
-        for delta in without_nans:
+        for delta in reversed(without_nans):
             trajectory_positions.append(trajectory_positions[-1] - np.floor(delta))
         positions.append(list(reversed(trajectory_positions)))
     return positions
@@ -112,21 +113,30 @@ def calc_trajectory_saliencies(trajectories):
 
 def get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
     trajectory_positions = deltas_to_positions(trajectories)
-    pixel_trajectory_lookup = np.ones(video_data_dimensions) * -1
+    pixel_trajectory_lookup = np.ones(video_data_dimensions, dtype=np.int32) * -1
     for trajectory_num, trajectory in enumerate(trajectory_positions):
         for index, position in enumerate(trajectory):
-            row = int(position[0])
-            col = int(position[1])
-            pixel_trajectory_lookup[row, col, index] = trajectory_num
+            row = int(position[1])
+            col = int(position[0])
+            pixel_trajectory_lookup[index, row, col] = trajectory_num
     return pixel_trajectory_lookup
 
 def get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup):
-    non_salient_regularization_lambda = 10.0
+    non_salient_value = 0.0
     pixel_saliencies = np.zeros_like(pixel_trajectory_lookup, dtype=project_float)
     for index, trajectory_num in np.ndenumerate(pixel_trajectory_lookup):
         if trajectory_num >= 0:
             pixel_saliencies[index] = trajectory_saliencies[trajectory_num]
         else:
-            pixel_saliencies[index] = non_salient_regularization_lambda
+            pixel_saliencies[index] = non_salient_value
     return pixel_saliencies
+
+def set_groups_saliencies(groups, trajectories, video_data_dimensions):
+    pixel_trajectory_lookup = get_pixel_trajectory_lookup(trajectories, video_data_dimensions)
+    trajectory_saliencies = calc_trajectory_saliencies(trajectories)
+    pixel_saliencies = get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    for group in groups:
+        group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
+        group['salience'] = np.sum(group_pixel_saliencies) / len(group['elems'])
+    return groups
 

@@ -125,8 +125,8 @@ def test_calc_trajectories_2():
 def test_deltas_to_positions():
     trajectories = {'deltas': [np.array(coll) for coll in [[[-1.0, 0.0], [-1.0, 1.0]], [[0.0, -1.0], [0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
-    assert_equal(m.deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, 0.0], [0.0, 0.0]],
-                                                        [[0.0, 1.0], [0.0, 2.0], [0.0, 1.0]]])
+    assert_equal(m.deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
+                                                        [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
 
 def test_is_salient():
     assert m.is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
@@ -164,6 +164,14 @@ def test_get_pixel_trajectory_lookup_2():
                                            [[0, 2],
                                             [1, -1]]])
 
+def test_get_pixel_trajectory_lookup_3():
+    trajectories = {'deltas': [[[1.0, 0.0]]],
+                    'positions': [[1.0, 0.0]]}
+    pixel_trajectory_lookup = m.get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    assert_equal(pixel_trajectory_lookup, [[[0, -1],
+                                            [-1, -1]],
+                                           [[-1, 0],
+                                            [-1, -1]]])
 
 def test_get_pixel_saliencies_1():
     trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
@@ -175,6 +183,47 @@ def test_get_pixel_saliencies_2():
     trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
     pixel_trajectory_lookup = [[[2, -1], [3, 1]]]
     pixel_saliencies = m.get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
-    assert_equal(pixel_saliencies, [[[0.5, 10.0], [3.0, 2.0]]])
+    assert_equal(pixel_saliencies, [[[0.5, 0.0], [3.0, 2.0]]])
 
+
+def test_set_groups_saliencies_1():
+    groups = [{'frame': 0, 'elems': [[0, 0]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0}])
+
+
+def test_set_groups_saliencies_2():
+    """Note that the elem coords are [row, col] and trajectory positions
+are [x, y] which is the reverse so the second group has inconsistent
+motion and thus a salience of -1."""
+    groups = [{'frame': 0, 'elems': [[0, 0]]}, {'frame': 1, 'elems': [[0, 1]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
+                          {'frame': 1, 'elems': [[0, 1]], 'salience': 0.0}])
+
+
+def test_set_groups_saliencies_3():
+    groups = [{'frame': 0, 'elems': [[0, 0]]}, {'frame': 1, 'elems': [[1, 0]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
+                          {'frame': 1, 'elems': [[1, 0]], 'salience': 1.0}])
+
+
+def test_set_groups_saliencies_4():
+    groups = [{'frame': 0, 'elems': [[0, 0], [0, 1]]}, {'frame': 1, 'elems': [[1, 0], [1, 1]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]], [[1.0, 0.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0], [1.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
+                          {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}])
 
