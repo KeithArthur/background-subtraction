@@ -205,7 +205,7 @@ def test_set_groups_saliencies_1():
 def test_set_groups_saliencies_2():
     """Note that the elem coords are [row, col] and trajectory positions
 are [x, y] which is the reverse so the second group has inconsistent
-motion and thus a salience of -1."""
+motion and thus a salience of 0."""
     groups = [{'frame': 0, 'elems': [[0, 0]]}, {'frame': 1, 'elems': [[0, 1]]}]
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}

@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import frames as f
 import graph as g
 import motion as m
+import group
 import utils
 from alm_lsd import inexact_alm_lsd
 
@@ -68,10 +69,13 @@ def main():
     upsampled_fg = np.int32(upsampled_fg > 128) * 255
     upsampled_bg = f.resize_frames(bg_frames, 1 / downsampling_ratio)
     
-    #optical_flows = m.calc_forward_backward_flow(frames_to_process)
-    #trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions)
+    optical_flows = m.calc_forward_backward_flow(frames_to_process)
+    trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions)
     
-    groups_info = utils.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
+    video_data_dimensions = [num_frames] + frame_dimensions
+    groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
+    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions)
+    m.set_regularization_lambdas(groups_info, video_data_dimensions)
     #print (groups_info)
     
     fg_images = [PIL.Image.fromarray(frame) for frame in upsampled_fg]
