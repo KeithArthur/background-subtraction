@@ -42,27 +42,27 @@ def main():
     start_frame_index = frame_index[0]
     end_frame_index = frame_index[1]
     frames_to_process = np.rollaxis(all_frames[:, :, start_frame_index:end_frame_index], 2)
-    
+    frame_dimensions = frames_to_process.shape[1:]
     
     #frame_index, frames_to_process = read_images('boats')
     
     downsampling_ratio = 1.0 / 4.0
     downsampled_frames = f.resize_frames(frames_to_process, downsampling_ratio)
-    frame_dimensions = downsampled_frames.shape[1:]
+    downsampled_frame_dimensions = downsampled_frames.shape[1:]
     
     #PIL.Image.fromarray(frames_to_process[35]).show() -> checked roll axis
     num_frames = downsampled_frames.shape[0]
     normalized_frames, original_mean = f.normalize_and_center_frames(downsampled_frames)
     
-    frames_D = f.frames_to_matrix(normalized_frames, num_frames, frame_dimensions)
+    frames_D = f.frames_to_matrix(normalized_frames, num_frames, downsampled_frame_dimensions)
     batch_dimensions = [3, 3]
-    graph = g.build_graph(frame_dimensions, batch_dimensions)
+    graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
     background_L, foreground_S, err = inexact_alm_lsd(frames_D, graph)
-    bg_frames = f.restore_background(f.matrix_to_frames(background_L, num_frames, frame_dimensions), original_mean)
+    bg_frames = f.restore_background(f.matrix_to_frames(background_L, num_frames, downsampled_frame_dimensions), original_mean)
     
     # Mask function needed
     masked_S = f.foreground_mask(np.abs(foreground_S), frames_D, background_L)
-    fg_frames = f.matrix_to_frames(masked_S, num_frames, frame_dimensions)
+    fg_frames = f.matrix_to_frames(masked_S, num_frames, downsampled_frame_dimensions)
     
     upsampled_fg = f.resize_frames(fg_frames, 1 / downsampling_ratio)
     upsampled_fg = np.int32(upsampled_fg > 128) * 255
