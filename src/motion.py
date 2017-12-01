@@ -111,11 +111,11 @@ def calc_forward_backward_flow(frames):
     forward_flow = []
     backward_flow = []
     for prev_frame, cur_frame, next_frame in prev_cur_next(frames):
-        if prev_frame != None:
+        if prev_frame is not None:
             backward_flow.append(cv2.calcOpticalFlowFarneback(prev_frame, cur_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
-        if next_frame != None:
+        if next_frame is not None:
             forward_flow.append(cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
-    return np.array(forward_flow, backward_flow)
+    return (forward_flow, backward_flow)
 
 def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
     trajectories = {'positions': [], 'deltas': []}
