@@ -24,7 +24,7 @@ def enumerate_pairs_with_order(coll):
     return to_enumerate
 
 def index2d_to_1d(x, y, f_dim):
-    return y + x * f_dim[0]
+    return x + y * f_dim[0]
 
 def index1d_to_2d(x, f_dim):
     return [x % f_dim[0], x / f_dim[0]]
