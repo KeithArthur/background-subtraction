@@ -5,3 +5,4 @@
 *.gif
 *.db
 *.jpg
+/src/save.p
