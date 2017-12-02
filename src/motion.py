@@ -27,7 +27,7 @@ def _update_trajectories(flow, trajectories, frame_dimensions):
         delta = flow[int(pos[1]), int(pos[0])]
         trajectories['positions'][index] = np.clip(trajectories['positions'][index] + np.floor(delta),
                                                    [0, 0],
-                                                   np.array(frame_dimensions) - 1)
+                                                   np.flip(np.array(frame_dimensions), 0) - 1)
         trajectories['deltas'][index].append(delta)
 
 def _flows_close(forward, backward):
