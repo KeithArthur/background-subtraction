@@ -67,7 +67,7 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     return ret_S
 
 def inexact_alm_bs(frames_D, group_info, max_iterations=100):
-    alm_penalty_scalar_rho = 1.1
+    alm_penalty_scalar_rho = 1.01
     tolerance = 1e-7
     err = []    
     num_pixels_n, num_frames_p = frames_D.shape
@@ -85,7 +85,7 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
         background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, rk)
         foreground_S = _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
-        dual_mu = min(alm_penalty_scalar_rho * dual_mu, tolerance * mu0)
+        dual_mu = alm_penalty_scalar_rho * dual_mu
         err.append(_calc_error(frames_D, background_L, foreground_S))
         if err[-1] < tolerance:
             break
