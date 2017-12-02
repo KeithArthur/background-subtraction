@@ -38,8 +38,12 @@ def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
     for index, pos in enumerate(trajectories['positions']):
         col, row = np.int32(pos)
         if _flows_close(forward_flow[row, col], backward_flow[row, col]):
-            complete_trajectories['positions'].append(trajectories['positions'].pop(index))
-            complete_trajectories['deltas'].append(trajectories['deltas'].pop(index))
+            tp, td = trajectories['positions'].pop(index), trajectories['deltas'].pop(index)
+            
+            if( len(tp) > 10 ):
+                complete_trajectories['positions'].append(tp)
+                complete_trajectories['deltas'].append(td)
+                
     return complete_trajectories
 
 def _is_salient(trajectory_deltas):
@@ -141,7 +145,7 @@ def set_regularization_lambdas(groups, video_data_dimensions):
     normalization = min_salience / np.sqrt(np.max(video_data_dimensions[1:]))
     for group in groups:
         if group['salience'] == 0:
-            group['regularization_lambda'] = 10.0
+            group['regularization_lambda'] = 1000.0
         else:
             group['regularization_lambda'] = 0.1 * normalization / group['salience']
     return groups
