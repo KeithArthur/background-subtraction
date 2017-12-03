@@ -60,7 +60,7 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
         index = group_info[i]['index']
         frame_num = group_info[i]['frame']
         # @ hack : divide 1000 (Small lambda is preferred)
-        thresh = group_info[i]['regularization_lambda'] / dual_mu / 1000
+        thresh = group_info[i]['regularization_lambda'] / dual_mu
         val = la.norm(G[index, frame_num])
 
         coeff = 0;

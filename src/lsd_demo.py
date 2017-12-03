@@ -116,6 +116,8 @@ def main():
         fg_images[i].save("./foreground/out" + str(i) + ".gif")
         bg_images[i].save("./background/out" + str(i) + ".gif")
         
+    bg_images[0].save("bg_out.gif", save_all=True, append_images=bg_images[1:])
+    fg_images[0].save("fg_out.gif", save_all=True, append_images=fg_images[1:])
     
 
 if __name__ == "__main__":

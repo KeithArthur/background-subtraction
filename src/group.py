@@ -28,7 +28,6 @@ def find_groups(fg_images, num_frames, f_dim):
                 while(len(queue) > 0):
                     x, y = queue.pop()
                     gr_list.append([x,y])
-                    ind_list.append(utils.index2d_to_1d(x,y,f_dim))
                     for dx, dy in search_dir:
                         if( check_inside_bound(x+dx, y+dy, f_dim) == False ):
                             continue
@@ -37,12 +36,17 @@ def find_groups(fg_images, num_frames, f_dim):
                             queue.append([x+dx, y+dy])
                             have_visited[x+dx, y+dy] = 1
     
-                groups.append({'frame':frame_num, 'elems':gr_list, 'index': ind_list})
+                groups.append({'frame':frame_num, 'elems':gr_list})
                 
     return groups
 
-def keep_only_in_group(mat, group_elems):
+def keep_only_in_group(mat, group_elems, f_dim):
+    th = 0.1
+    ind_list = []
     filtered_mat = np.zeros_like(mat)
-    for index in group_elems:
-        filtered_mat[index[0]][index[1]] = mat[index[0]][index[1]]
-    return filtered_mat
+    for x,y in group_elems:
+        filtered_mat[x,y] = mat[x,y]
+        if( mat[x,y] > th ):
+            ind_list.append(utils.index2d_to_1d(x,y, f_dim))
+            
+    return filtered_mat, ind_list
