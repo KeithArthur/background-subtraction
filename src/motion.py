@@ -33,14 +33,14 @@ def _update_trajectories(flow, trajectories, frame_dimensions):
 def _flows_close(forward, backward):
     return np.sum((forward + backward)**2) < 0.01 * (np.sum(forward**2) + np.sum(backward**2)) + 0.2
 
-def _end_occluded_trajectories(forward_flow, backward_flow, trajectories):
+def _end_occluded_trajectories(forward_flow, backward_flow, trajectories, len_thresh):
     complete_trajectories = {'positions': [], 'deltas': []}
     for index, pos in enumerate(trajectories['positions']):
         col, row = np.int32(pos)
         if _flows_close(forward_flow[row, col], backward_flow[row, col]):
             tp, td = trajectories['positions'].pop(index), trajectories['deltas'].pop(index)
             
-            if( len(tp) > 10 ):
+            if( len(tp) > len_thresh ):
                 complete_trajectories['positions'].append(tp)
                 complete_trajectories['deltas'].append(td)
                 
@@ -74,28 +74,36 @@ def _deltas_to_positions(trajectories):
     positions = []
     for index, position in enumerate(trajectories['positions']):
         trajectory_positions = [position]
-        without_nans = [delta for delta in trajectories['deltas'][index] if not np.isscalar(delta)]
-        for delta in reversed(without_nans):
-            trajectory_positions.append(trajectory_positions[-1] - np.floor(delta))
+        for delta in reversed(trajectories['deltas'][index]):
+            if np.isscalar(delta):
+                trajectory_positions.append(np.nan)
+            else:
+                trajectory_positions.append(trajectory_positions[-1] - np.floor(delta))
         positions.append(list(reversed(trajectory_positions)))
     return positions
 
-def _calc_trajectory_saliencies(trajectories):
+def _calc_trajectory_saliencies(trajectories, len_thresh):
     positions = _deltas_to_positions(trajectories)
     saliencies = []
     inconsistent_trajectory_nums = _get_inconsistent_trajectory_nums(trajectories)
     for trajectory_num, trajectory_positions in enumerate(positions):
+        without_nans = [pos for pos in trajectory_positions if not np.isscalar(pos)]
         if trajectory_num in inconsistent_trajectory_nums:
             saliencies.append(0)
+        elif len(without_nans) < len_thresh:
+            saliencies.append(0)
         else:
-            saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(trajectory_positions)]))
+            saliencies.append(np.max([la.norm(position_1 - position_2) for position_1, position_2 in enumerate_pairs_with_order(without_nans)]))
     return saliencies
 
 def _get_pixel_trajectory_lookup(trajectories, video_data_dimensions):
     trajectory_positions = _deltas_to_positions(trajectories)
     pixel_trajectory_lookup = np.ones(video_data_dimensions, dtype=np.int32) * -1
     for trajectory_num, trajectory in enumerate(trajectory_positions):
-        for index, position in enumerate(trajectory):
+        without_nans = [pos for pos in trajectory if not np.isscalar(pos)]
+        for index, position in enumerate(without_nans):
+            if np.isscalar(position):
+                continue
             row = int(position[1])
             col = int(position[0])
             pixel_trajectory_lookup[index, row, col] = trajectory_num
@@ -121,24 +129,41 @@ def calc_forward_backward_flow(frames):
             forward_flow.append(cv2.calcOpticalFlowFarneback(cur_frame, next_frame, None, 0.5, 3, 15, 3, 5, 1.2, 0))
     return (forward_flow, backward_flow)
 
-def calc_trajectories(forward_flows, backward_flows, frame_dimensions):
+def calc_trajectories(forward_flows, backward_flows, frame_dimensions, len_thresh):
     trajectories = {'positions': [], 'deltas': []}
     completed_trajectories = {'positions': [], 'deltas': []}
     for forward_flow, backward_flow in zip(forward_flows, backward_flows):
         _init_missing_trajectories(forward_flow, trajectories)
         _update_trajectories(forward_flow, trajectories, frame_dimensions)
-        extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories))
+        extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories, len_thresh))
     extend_dict(completed_trajectories, trajectories)
     return completed_trajectories
 
-def set_groups_saliencies(groups, trajectories, video_data_dimensions):
+def set_groups_saliencies(groups, trajectories, video_data_dimensions, len_thresh):
     pixel_trajectory_lookup = _get_pixel_trajectory_lookup(trajectories, video_data_dimensions)
-    trajectory_saliencies = _calc_trajectory_saliencies(trajectories)
+    trajectory_saliencies = _calc_trajectory_saliencies(trajectories, len_thresh)
     pixel_saliencies = _get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     for group in groups:
         group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['elems'])
     return groups
+
+def set_groups_saliencies_from_flows(groups, flows):
+    def flow_mag(flows):
+        f = []
+        for flow in flows:
+            arr = flow.reshape(np.prod(flow.shape[:2]), 2)
+            f.append(np.array([la.norm(e) for e in arr]).reshape(flow.shape[:2]))
+        return f
+    mag = flow_mag(flows)
+    pixel_saliencies = mag / np.max(mag) * 1000.0
+    for group in groups:
+        if group['frame'] > 29:
+            group['salience'] = 0.0
+            continue
+        group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
+        group['salience'] = np.sum(group_pixel_saliencies) / len(group['elems'])
+    return groups, pixel_saliencies
 
 def set_regularization_lambdas(groups, video_data_dimensions):
     min_salience = min([group['salience'] for group in groups])
