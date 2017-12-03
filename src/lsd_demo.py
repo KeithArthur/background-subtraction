@@ -87,7 +87,7 @@ def main():
     else:
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
-        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions)
+        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 10)
         pickle.dump(trajectories, open( "save.p", "wb" ))
     
     print ('---Phase 2.2---')
