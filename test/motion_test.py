@@ -67,7 +67,7 @@ def test__end_occluded_trajectories():
                               [[1.0, 0.0], [-1.0, 0.0]]])
     trajectories = {'positions': [[0.0, 0.0]],
                     'deltas': [[[-1.0, 0.0]]]}
-    complete_trajectories = m._end_occluded_trajectories(forward_flow, backward_flow, trajectories)
+    complete_trajectories = m._end_occluded_trajectories(forward_flow, backward_flow, trajectories, 1)
     assert_equal(trajectories, {
         'positions': [],
         'deltas': []
@@ -91,7 +91,7 @@ def test_calc_trajectories_1():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2], 1)
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
@@ -113,7 +113,7 @@ def test_calc_trajectories_2():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2], 1)
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
@@ -122,11 +122,18 @@ def test_calc_trajectories_2():
     assert_equal(trajectories['positions'], [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0], [1.0, 0.0]])
 
 
-def test__deltas_to_positions():
+def test__deltas_to_positions_1():
     trajectories = {'deltas': [np.array(coll) for coll in [[[-1.0, 0.0], [-1.0, 1.0]], [[0.0, -1.0], [0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
     assert_equal(m._deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
                                                         [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
+
+
+def test__deltas_to_positions_2():
+    trajectories = {'deltas': [np.array([[-1.0, 0.0], [-1.0, 1.0]]), [np.nan, np.array([0.0, 1.0])]],
+                    'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
+    assert_equal(m._deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
+                                                        [np.nan, [0.0, 0.0], [0.0, 1.0]]])
 
 def test__is_salient():
     assert m._is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
@@ -141,14 +148,14 @@ def test__calc_trajectory_saliencies_1():
     """returns a list of the motion saliencies"""
     trajectories = {'positions': [np.array(col) for col in [[10.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[5.0, 0.0], [5.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m._calc_trajectory_saliencies(trajectories), [10.0, 0, 0, 0])
+    assert_equal(m._calc_trajectory_saliencies(trajectories, 1), [10.0, 0, 0, 0])
 
 
 def test__calc_trajectory_saliencies_2():
     """appends 0 for inconsistent motion"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m._calc_trajectory_saliencies(trajectories), [0.0, 0, 0, 0])
+    assert_equal(m._calc_trajectory_saliencies(trajectories, 1), [0.0, 0, 0, 0])
 
 
 def test__get_pixel_trajectory_lookup_1():
@@ -198,7 +205,7 @@ def test_set_groups_saliencies_1():
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
     video_data_dimensions = (2, 2, 2)
-    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
     assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0}])
 
 
@@ -210,7 +217,7 @@ motion and thus a salience of 0."""
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
     video_data_dimensions = (2, 2, 2)
-    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
     assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
                           {'frame': 1, 'elems': [[0, 1]], 'salience': 0.0}])
 
@@ -220,7 +227,7 @@ def test_set_groups_saliencies_3():
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
     video_data_dimensions = (2, 2, 2)
-    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
     assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
                           {'frame': 1, 'elems': [[1, 0]], 'salience': 1.0}])
 
@@ -230,7 +237,7 @@ def test_set_groups_saliencies_4():
     trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]], [[1.0, 0.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 1.0], [1.0, 1.0]]]}
     video_data_dimensions = (2, 2, 2)
-    m.set_groups_saliencies(groups, trajectories, video_data_dimensions)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
     assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
                           {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}])
 

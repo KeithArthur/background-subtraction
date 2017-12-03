@@ -87,14 +87,14 @@ def main():
     else:
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
-        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions)
+        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 10)
         pickle.dump(trajectories, open( "save.p", "wb" ))
     
     print ('---Phase 2.2---')
     # identify ground and compute lambda
     video_data_dimensions = [num_frames] + list(frame_dimensions)
     groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
-    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions)
+    m.set_groups_saliencies(groups_info, optical_flows[0], video_data_dimensions, 10)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
     
     print ('---Phase 3---')
