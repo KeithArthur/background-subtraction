@@ -58,19 +58,23 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     
     for i in range(len(group_info)):
         index = group_info[i]['index']
+        if( len(index) == 0 ): continue
+    
         frame_num = group_info[i]['frame']
         # @ hack : divide 1000 (Small lambda is preferred)
-        thresh = group_info[i]['regularization_lambda'] / dual_mu
-        val = la.norm(G[index, frame_num])
+        thresh = group_info[i]['regularization_lambda'] / dual_mu * 1e-4
+        #val = la.norm(G[index, frame_num])
 
-        coeff = 0;
-        if(val > thresh): coeff = (val - thresh)/val;
-        ret_S[index, frame_num] = coeff * G[index, frame_num]
+        ret_S[index, frame_num] = np.maximum(np.abs(G[index, frame_num]) - thresh, 0) * np.sign(G[index, frame_num])
+        #coeff = 0;
+        #if(val > thresh): coeff = (val - thresh)/val;
+        #ret_S[index, frame_num] = coeff * G[index, frame_num]
         
+    print np.sum(ret_S)
     return ret_S
 
 def inexact_alm_bs(frames_D, group_info, max_iterations=100):
-    alm_penalty_scalar_rho = 1.1
+    alm_penalty_scalar_rho = 1.0
     tolerance = 1e-11
     err = []
     num_pixels_n, num_frames_p = frames_D.shape
@@ -85,7 +89,7 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
     
     rk = min(num_pixels_n, num_frames_p)
     for t in range(max_iterations):
-        background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S)
+        background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, num_frames_p)
         foreground_S = _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e7)
