@@ -22,3 +22,9 @@ def enumerate_pairs_with_order(coll):
     for index, elem in enumerate(coll[:-1]):
         to_enumerate.extend([(elem, other_elem) for other_elem in coll[index + 1:]])
     return to_enumerate
+
+def index2d_to_1d(x, y, f_dim):
+    return x + y * f_dim[0]
+
+def index1d_to_2d(x, f_dim):
+    return [x % f_dim[0], x / f_dim[0]]

@@ -3,3 +3,6 @@
 /RPCA_GD
 *.pyc
 *.gif
+*.db
+*.jpg
+/src/save.p

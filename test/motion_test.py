@@ -67,7 +67,7 @@ def test__end_occluded_trajectories():
                               [[1.0, 0.0], [-1.0, 0.0]]])
     trajectories = {'positions': [[0.0, 0.0]],
                     'deltas': [[[-1.0, 0.0]]]}
-    complete_trajectories = m._end_occluded_trajectories(forward_flow, backward_flow, trajectories)
+    complete_trajectories = m._end_occluded_trajectories(forward_flow, backward_flow, trajectories, 1)
     assert_equal(trajectories, {
         'positions': [],
         'deltas': []
@@ -91,7 +91,7 @@ def test_calc_trajectories_1():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2], 1)
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
@@ -113,7 +113,7 @@ def test_calc_trajectories_2():
                                 [[1.0, 0.0], [-1.0, 0.0]]]),
                       np.array([[[1.0, 0.0], [-1.0, 0.0]],
                                 [[1.0, 0.0], [-1.0, 0.0]]])]
-    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2])
+    trajectories = m.calc_trajectories(forward_flows, backward_flows, [2, 2], 1)
     assert_equal(trajectories['deltas'], [[[1.0, 0.0], [-1.0, 0.0]],
                                           [[-1.0, 0.0], [1.0, 0.0], [-1.0, 0.0]],
                                           [[1.0, 0.0], [-1.0, 0.0], [1.0, 0.0]],
@@ -122,14 +122,130 @@ def test_calc_trajectories_2():
     assert_equal(trajectories['positions'], [[0.0, 0.0], [0.0, 0.0], [1.0, 1.0], [0.0, 1.0], [1.0, 0.0]])
 
 
-def test_deltas_to_positions():
+def test__deltas_to_positions_1():
     trajectories = {'deltas': [np.array(coll) for coll in [[[-1.0, 0.0], [-1.0, 1.0]], [[0.0, -1.0], [0.0, 1.0]]]],
                     'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
-    assert_equal(m.deltas_to_positions(trajectories), [[[0.0, 0.0], [-1.0, 0.0], [-2.0, 1.0]],
+    assert_equal(m._deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
                                                         [[0.0, 1.0], [0.0, 0.0], [0.0, 1.0]]])
 
-def test_calc_motion_saliencies():
+
+def test__deltas_to_positions_2():
+    trajectories = {'deltas': [np.array([[-1.0, 0.0], [-1.0, 1.0]]), [np.nan, np.array([0.0, 1.0])]],
+                    'positions': [np.array(coll) for coll in [[0.0, 0.0], [0.0, 1.0]]]}
+    assert_equal(m._deltas_to_positions(trajectories), [[[2.0, -1.0], [1.0, -1.0], [0.0, 0.0]],
+                                                        [np.nan, [0.0, 0.0], [0.0, 1.0]]])
+
+def test__is_salient():
+    assert m._is_salient(np.array([[-1.0, 0.0], [-1.0, 1.0]]))
+    assert not m._is_salient(np.array([[0.0, -1.0], [0.0, 0.0]]))
+
+def test__get_inconsistent_trajectory_nums():
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, -1.0], [0.0, 0.0]], [[-1.0, 0.0], [-1.0, 1.0]]]]}
+    inconsistent_trajectory_nums = m._get_inconsistent_trajectory_nums(trajectories)
+    assert inconsistent_trajectory_nums == [0]
+
+def test__calc_trajectory_saliencies_1():
     """returns a list of the motion saliencies"""
+    trajectories = {'positions': [np.array(col) for col in [[10.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
+                    'deltas': [[[5.0, 0.0], [5.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
+    assert_equal(m._calc_trajectory_saliencies(trajectories, 1), [10.0, 0, 0, 0])
+
+
+def test__calc_trajectory_saliencies_2():
+    """appends 0 for inconsistent motion"""
     trajectories = {'positions': [np.array(col) for col in [[1.0, 0.0], [0.0, 0.0], [0.0, 1.0], [1.0, 1.0]]],
                     'deltas': [[[1.0, 0.0], [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]], [np.nan, [0.0, 0.0]]]}
-    assert_equal(m.calc_motion_saliencies(trajectories), [1.0, 0, 0, 0])
+    assert_equal(m._calc_trajectory_saliencies(trajectories, 1), [0.0, 0, 0, 0])
+
+
+def test__get_pixel_trajectory_lookup_1():
+    trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]], [[1.0, 0.0]]],
+                    'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]}
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    assert_equal(pixel_trajectory_lookup, [[[2, 0],
+                                            [3, 1]],
+                                           [[0, 2],
+                                            [1, 3]]])
+
+
+def test__get_pixel_trajectory_lookup_2():
+    """-1 wherever a trajectory does not pass through. This is to set a saliency of 0 later."""
+    trajectories = {'deltas': [[[-1.0, 0.0]], [[-1.0, 0.0]], [[1.0, 0.0]]],
+                    'positions': [[0.0, 0.0], [0.0, 1.0], [1.0, 0.0]]}
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    assert_equal(pixel_trajectory_lookup, [[[2, 0],
+                                            [-1, 1]],
+                                           [[0, 2],
+                                            [1, -1]]])
+
+def test__get_pixel_trajectory_lookup_3():
+    trajectories = {'deltas': [[[1.0, 0.0]]],
+                    'positions': [[1.0, 0.0]]}
+    pixel_trajectory_lookup = m._get_pixel_trajectory_lookup(trajectories, (2, 2, 2))
+    assert_equal(pixel_trajectory_lookup, [[[0, -1],
+                                            [-1, -1]],
+                                           [[-1, 0],
+                                            [-1, -1]]])
+
+def test__get_pixel_saliencies_1():
+    trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
+    pixel_trajectory_lookup = [[[2, 0], [3, 1]]]
+    pixel_saliencies = m._get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    assert_equal(pixel_saliencies, [[[0.5, 1.0], [3.0, 2.0]]])
+
+def test__get_pixel_saliencies_2():
+    trajectory_saliencies = [1.0, 2.0, 0.5, 3.0]
+    pixel_trajectory_lookup = [[[2, -1], [3, 1]]]
+    pixel_saliencies = m._get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
+    assert_equal(pixel_saliencies, [[[0.5, 0.0], [3.0, 2.0]]])
+
+
+def test_set_groups_saliencies_1():
+    groups = [{'frame': 0, 'elems': [[0, 0]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0}])
+
+
+def test_set_groups_saliencies_2():
+    """Note that the elem coords are [row, col] and trajectory positions
+are [x, y] which is the reverse so the second group has inconsistent
+motion and thus a salience of 0."""
+    groups = [{'frame': 0, 'elems': [[0, 0]]}, {'frame': 1, 'elems': [[0, 1]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
+                          {'frame': 1, 'elems': [[0, 1]], 'salience': 0.0}])
+
+
+def test_set_groups_saliencies_3():
+    groups = [{'frame': 0, 'elems': [[0, 0]]}, {'frame': 1, 'elems': [[1, 0]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0]], 'salience': 1.0},
+                          {'frame': 1, 'elems': [[1, 0]], 'salience': 1.0}])
+
+
+def test_set_groups_saliencies_4():
+    groups = [{'frame': 0, 'elems': [[0, 0], [0, 1]]}, {'frame': 1, 'elems': [[1, 0], [1, 1]]}]
+    trajectories = {'deltas': [np.array(coll) for coll in [[[0.0, 1.0]], [[1.0, 0.0]]]],
+                    'positions': [np.array(coll) for coll in [[0.0, 1.0], [1.0, 1.0]]]}
+    video_data_dimensions = (2, 2, 2)
+    m.set_groups_saliencies(groups, trajectories, video_data_dimensions, 1)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
+                          {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}])
+
+
+def test_set_regularization_lambdas():
+    groups = [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5},
+              {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0}]
+    video_data_dimensions = (2, 2, 2)
+    m.set_regularization_lambdas(groups, video_data_dimensions)
+    assert_equal(groups, [{'frame': 0, 'elems': [[0, 0], [0, 1]], 'salience': 0.5, 'regularization_lambda': 1.0/np.sqrt(2) * 0.1},
+                          {'frame': 1, 'elems': [[1, 0], [1, 1]], 'salience': 1.0, 'regularization_lambda': 0.5/np.sqrt(2) * 0.1}])
