@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.linalg as la
-import spams
+#import spams
 
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
@@ -15,18 +15,10 @@ def _soft_thresh(S, threshold):
 
 def shrink(M, threshold, rk = -1):
     [U, S, V] = la.svd(M, full_matrices=False)
-    #U, S, V = U[:, 0:rk+1], S[0:rk+1], V[0:rk+1, :]
-    #ratio = S[:-1] / S[1:]
-    #r = np.argmax(ratio)
-
-    #nrk = rk
-    #if( ratio[r] > 2 ): nrk = r + 1
-    #nrk = min(len(S[S>threshold]), nrk)
     
     nrk = len(S[S>threshold])
     if(rk > 0): nrk = rk
     
-    #print np.sum(S)
     return np.dot(U[:, :nrk], np.dot(np.diag(_soft_thresh(S[:nrk], threshold)), V[:nrk, :])), nrk
 
 def min_cost_flow(input_signal_U, graph, lambda1):

@@ -26,14 +26,19 @@ def _calc_error(frames_D, background_L, foreground_S):
     distance = frames_D - background_L - foreground_S
     return la.norm(distance,'fro') / la.norm(frames_D,'fro');
 
-def inexact_alm_lsd(frames_D, graph, max_iterations=100):
+def inexact_alm_lsd(frames_D, graph=None, max_iterations=30):
+    import time
+    st_time = time.clock()
+    
     alm_penalty_scalar_rho = 1.2
     tolerance = 1e-10
     err = []
     num_pixels_n, num_frames_p = frames_D.shape
     regularization_lambda = 1.0 / np.sqrt(num_pixels_n)
-    dual_mu = 12.5 / la.norm(frames_D, ord=2)
+    mu0 = 12.5 / la.norm(frames_D, ord=2)
+    
     dual_Y = frames_D / dual_norm(frames_D, regularization_lambda)
+    dual_mu = mu0
     foreground_S = np.zeros_like(frames_D) # E in reference code
     background_L = np.zeros_like(frames_D) # A in reference code
     
@@ -42,12 +47,14 @@ def inexact_alm_lsd(frames_D, graph, max_iterations=100):
         background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, 1)
         foreground_S = _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
-        dual_mu = alm_penalty_scalar_rho * dual_mu
+        dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e6)
         err.append(_calc_error(frames_D, background_L, foreground_S))
         
+        print t, err[-1]
         if err[-1] < tolerance:
             break
  
+    print time.clock() - st_time
     return background_L, foreground_S, err
 
 
@@ -62,7 +69,7 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     
         frame_num = group_info[i]['frame']
         # @ hack : divide 1000 (Small lambda is preferred)
-        thresh = group_info[i]['regularization_lambda'] / dual_mu * 1e-4
+        thresh = group_info[i]['regularization_lambda'] / dual_mu
         #val = la.norm(G[index, frame_num])
 
         ret_S[index, frame_num] = np.maximum(np.abs(G[index, frame_num]) - thresh, 0) * np.sign(G[index, frame_num])
@@ -70,11 +77,10 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
         #if(val > thresh): coeff = (val - thresh)/val;
         #ret_S[index, frame_num] = coeff * G[index, frame_num]
         
-    print np.sum(ret_S)
     return ret_S
 
 def inexact_alm_bs(frames_D, group_info, max_iterations=100):
-    alm_penalty_scalar_rho = 1.0
+    alm_penalty_scalar_rho = 1.2
     tolerance = 1e-11
     err = []
     num_pixels_n, num_frames_p = frames_D.shape
@@ -92,7 +98,7 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
         background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, num_frames_p)
         foreground_S = _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
-        dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e7)
+        dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e6)
         err.append(_calc_error(frames_D, background_L, foreground_S))
         if err[-1] < tolerance:
             break

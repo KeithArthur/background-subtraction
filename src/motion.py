@@ -18,7 +18,6 @@ def _init_missing_trajectories(flow, trajectories):
     frames_so_far = len(trajectories['deltas'][0]) if len(trajectories['deltas']) != 0 else 0
     position_indices = [np.flip(pos, 0) for pos in trajectories['positions']]
     for row, col in _get_remaining_indices(position_indices, flow.shape[:2]):
-        delta = flow[row, col]
         trajectories['deltas'].append(left_pad([], np.nan, frames_so_far))
         trajectories['positions'].append(np.array([col, row], dtype=project_float))
 
@@ -40,7 +39,7 @@ def _end_occluded_trajectories(forward_flow, backward_flow, trajectories, len_th
         if _flows_close(forward_flow[row, col], backward_flow[row, col]):
             tp, td = trajectories['positions'].pop(index), trajectories['deltas'].pop(index)
             
-            if( len(tp) > len_thresh ):
+            if( len(td) > len_thresh ):
                 complete_trajectories['positions'].append(tp)
                 complete_trajectories['deltas'].append(td)
                 
@@ -51,15 +50,15 @@ def _is_salient(trajectory_deltas):
     negative_motion_N = {'horiz': 0, 'vert': 0}
     without_nans = [delta for delta in trajectory_deltas if not np.isscalar(delta)]
     for delta in without_nans:
-        if delta[0] > 0:
-            positive_motion_P['horiz'] += 1
-        elif delta[0] < 0:
-            negative_motion_N['horiz'] += 1
-        if delta[1] > 0:
+        if delta[1] > 0.01:
             positive_motion_P['vert'] += 1
-        elif delta[1] < 0:
+        elif delta[1] < -0.01:
             negative_motion_N['vert'] += 1
-    return any(np.add(positive_motion_P.values(), negative_motion_N.values()) > 0.8 * len(without_nans))
+        if delta[0] > 0.01:
+            positive_motion_P['horiz'] += 1
+        elif delta[0] < -0.01:
+            negative_motion_N['horiz'] += 1
+    return any(np.add(positive_motion_P.values(), negative_motion_N.values()) > 0.02 * len(without_nans))
 
 def _get_inconsistent_trajectory_nums(trajectories):
     trajectory_nums = []
@@ -136,6 +135,7 @@ def calc_trajectories(forward_flows, backward_flows, frame_dimensions, len_thres
         _init_missing_trajectories(forward_flow, trajectories)
         _update_trajectories(forward_flow, trajectories, frame_dimensions)
         extend_dict(completed_trajectories, _end_occluded_trajectories(forward_flow, backward_flow, trajectories, len_thresh))
+        
     extend_dict(completed_trajectories, trajectories)
     return completed_trajectories
 
@@ -145,8 +145,7 @@ def set_groups_saliencies(groups, trajectories, video_data_dimensions, len_thres
     pixel_saliencies = _get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
     
     for group in groups:
-        group_pixel_saliencies, ind_list = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'], video_data_dimensions[1:])
-        group['index'] = ind_list
+        group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['index'])
     return groups
 

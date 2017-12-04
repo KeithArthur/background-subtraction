@@ -14,6 +14,7 @@ import motion as m
 import group
 from alm_lsd import inexact_alm_lsd, inexact_alm_bs
 
+from FRPCA_GD import FRPCA
 import cPickle as pickle
 import os.path
 
@@ -38,7 +39,6 @@ def read_images(data_name):
     return [0, len(frames)], np.array(frames)
     
 def main():
-    
     frame_index = [0, 48]
     video_data_path = '../LSD/data/WaterSurface.mat'
     all_frames = scipy.io.loadmat(video_data_path)['ImData']
@@ -46,8 +46,7 @@ def main():
     end_frame_index = frame_index[1]
     frames_to_process = np.rollaxis(all_frames[:, :, start_frame_index:end_frame_index], 2)
     
-    
-    #frame_index, frames_to_process = read_images('boats')   
+    #frame_index, frames_to_process = read_images('rain')   
     frame_dimensions = frames_to_process.shape[1:]
     
     downsampling_ratio = 1.0 / 4.0
@@ -58,11 +57,14 @@ def main():
     normalized_frames, original_mean = f.normalize_and_center_frames(downsampled_frames)
     
     frames_D = f.frames_to_matrix(normalized_frames, num_frames, downsampled_frame_dimensions)
-    batch_dimensions = [3, 3]
-    graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
-    background_L, foreground_S, err = inexact_alm_lsd(frames_D, graph)
+    # batch_dimensions = [3, 3]
+    # graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
+   
+    print ('L1')
+    background_L, foreground_S, err = inexact_alm_lsd(frames_D, None)
+    #print ('FRPCA')
+    #background_L, foreground_S, err = FRPCA(frames_D, alpha = .2, r=1)
     
-    print ('---Phase 1---')
     # Masking first-RPCA foreground & Upsampling
     masked_S = f.foreground_mask(np.abs(foreground_S), frames_D, background_L)
     fg_frames = f.matrix_to_frames(masked_S, num_frames, downsampled_frame_dimensions)
@@ -87,14 +89,16 @@ def main():
     else:
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
-        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 10)
+        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
+        
+        print (trajectories)
         pickle.dump(trajectories, open( "save.p", "wb" ))
     
     print ('---Phase 2.2---')
     # identify ground and compute lambda
     video_data_dimensions = [num_frames] + list(frame_dimensions)
     groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
-    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 10)
+    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 3)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
     
     print ('---Phase 3---')

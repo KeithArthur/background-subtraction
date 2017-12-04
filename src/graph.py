@@ -1,6 +1,6 @@
 import scipy.sparse as sp
 import numpy as np
-
+import utils
 
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32
@@ -17,9 +17,11 @@ def build_graph(frame_dimensions, batch_dimensions):
                                      dtype=np.bool),
              'groups_var': sp.csc_matrix(np.zeros((frame_height_m * frame_width_n, num_groups), dtype=np.bool), dtype=np.bool)}
     for i in range(0, num_groups):
-        indiMatrix = np.zeros((frame_height_m, frame_width_n))
         indX = i / num_y
         indY = i % num_y
-        indiMatrix[indX:indX+batch_height, indY:indY+batch_width] = True
-        graph['groups_var'][np.where(indiMatrix.ravel()), i] = True
+        
+        for x in range(indX, indX + batch_height):
+            for y in range(indY, indY + batch_width):
+                graph['groups_var'][utils.index2d_to_1d(x,y,frame_dimensions), i] = True
+
     return graph
