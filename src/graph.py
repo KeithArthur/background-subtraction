@@ -15,7 +15,7 @@ def build_graph(frame_dimensions, batch_dimensions):
     graph = {'eta_g': np.ones(num_groups, dtype=project_float),
              'groups': sp.csc_matrix((num_groups, num_groups),
                                      dtype=np.bool),
-             'groups_var': sp.csc_matrix((frame_height_m * frame_width_n, num_groups), dtype=np.bool)}
+             'groups_var': sp.lil_matrix((frame_height_m * frame_width_n, num_groups), dtype=np.bool)}
     for i in range(0, num_groups):
         indX = i / num_y
         indY = i % num_y
@@ -24,4 +24,5 @@ def build_graph(frame_dimensions, batch_dimensions):
             for y in range(indY, indY + batch_width):
                 graph['groups_var'][utils.index2d_to_1d(x,y,frame_dimensions), i] = True
 
+    graph['groups_var'] = sp.csc_matrix(graph['groups_var'])
     return graph
