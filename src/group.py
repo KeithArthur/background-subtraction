@@ -11,7 +11,7 @@ import utils
 def check_inside_bound(x, y, f_dim):
     return x >= 0 and y >= 0 and x < f_dim[0] and y < f_dim[1]
     
-def find_groups(fg_images, num_frames, f_dim):
+def find_groups(fg_images, num_frames, f_dim, min_size=0):
     groups = []
     search_dir = [[+1, 0], [0, +1], [-1, 0], [0, -1]]
     
@@ -37,7 +37,8 @@ def find_groups(fg_images, num_frames, f_dim):
                             queue.append([x+dx, y+dy])
                             have_visited[x+dx, y+dy] = 1
     
-                groups.append({'frame':frame_num, 'elems':gr_list, 'index':ind_list})
+                if len(gr_list) > min_size:
+                    groups.append({'frame':frame_num, 'elems':gr_list, 'index':ind_list})
                 
     return groups
 

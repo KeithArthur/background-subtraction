@@ -94,7 +94,7 @@ def main():
     print ('---Phase 2.2---')
     # identify ground and compute lambda
     video_data_dimensions = [num_frames] + list(frame_dimensions)
-    groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
+    groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:], min_size=50)
     m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 5)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
     
