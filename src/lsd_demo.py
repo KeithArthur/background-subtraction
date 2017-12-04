@@ -57,13 +57,13 @@ def main():
     normalized_frames, original_mean = f.normalize_and_center_frames(downsampled_frames)
     
     frames_D = f.frames_to_matrix(normalized_frames, num_frames, downsampled_frame_dimensions)
-    # batch_dimensions = [3, 3]
-    # graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
+    #batch_dimensions = [3, 3]
+    #graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
    
-    print ('L1')
-    background_L, foreground_S, err = inexact_alm_lsd(frames_D, None)
-    #print ('FRPCA')
-    #background_L, foreground_S, err = FRPCA(frames_D, alpha = .2, r=1)
+    #print ('L1')
+    #background_L, foreground_S, err = inexact_alm_lsd(frames_D, graph)
+    print ('FRPCA')
+    background_L, foreground_S, err = FRPCA(frames_D, alpha = .3, r=1)
     
     # Masking first-RPCA foreground & Upsampling
     masked_S = f.foreground_mask(np.abs(foreground_S), frames_D, background_L)
@@ -72,7 +72,6 @@ def main():
     upsampled_fg = np.int32(upsampled_fg > 128) * 255
     
     # print
-    """
     bg_bin = f.restore_background(f.matrix_to_frames(background_L, num_frames, 
                                                      downsampled_frame_dimensions), original_mean)
     bg_images = [PIL.Image.fromarray(frame) for frame in bg_bin]
@@ -81,7 +80,7 @@ def main():
         fg_images[i].save("./foreground/out" + str(i) + ".gif")
         bg_images[i].save("./background/out" + str(i) + ".gif")
     return
-    """
+    
 
     print ('---Phase 2.1---')
     if os.path.isfile('save.p'):
@@ -90,15 +89,13 @@ def main():
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
         trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
-        
-        print (trajectories)
         pickle.dump(trajectories, open( "save.p", "wb" ))
     
     print ('---Phase 2.2---')
     # identify ground and compute lambda
     video_data_dimensions = [num_frames] + list(frame_dimensions)
     groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:])
-    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 3)
+    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 5)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
     
     print ('---Phase 3---')
