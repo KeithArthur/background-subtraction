@@ -15,10 +15,10 @@
 \newcommand{\alfa}{\mathbf{\alpha}}
 \newcommand{\eks}{\mathbf{x}}
 \newcommand{\dub}{\mathbf{w}}
+\bibliographystyle{ieeetr}
+\title{Background Subtraction using Low-Rank \& Structured Decomposition}
 
-\title{tbd}
-
-\author{authors}
+\author{Dany Haddad, Jeong Yeol Kwon, Keith Shannon, Cesar Yahia}
 
 \date{\today}
 
@@ -31,8 +31,21 @@
 \vspace{-3pt}
 \section{Problem description}
 \label{sec:introduction}
+A current problem in computer vision is the process of foreground extraction: taking a videoand separating the background, meaning the floor, walls, and any static objects in the scene,from the foreground, all moving objects. In the case of a video shot on green screen, this is asimple process of removing all pixels of a given color. For arbitrary video this is more difficult.We describe a method of background subtraction based on the RPCA problem and discuss twodifferent methods for solving said problem. \newline
 
+Low-rank and sparse decomposition method has emerged as a promising framework for extracting the foreground. This is done by representing each frame of the video as a column in a matrix, then decomposing that matrix into a low-rank matrix corresponding to the background and a sparse matrix representing the foreground. The decomposition could be solved by the following relaxed convex problem: \newline
 
+\begin{equation}\label{bound}
+\min_{L,S} \Vert L \Vert_{\ast} + \lambda \Vert S \Vert_{1} \quad s.t. \quad A=L+S
+\end{equation}
+
+Where $A$ is the matrix representing the video, $L$ is a low rank matrix representing the background, and $S$ is a sparse matrix representing the foreground. This method falls into the framework of robust principal component analysis (RPCA). \newline
+
+This technique is augmented in \cite{xin_liu_background_2015} by doing two passes. First, they use a structured norm to determine groups of pixels that are in the foreground. These groups are compared to a motion saliency map of the video which is used to delete some groups. Then on the second pass, RPCA is used locally on the groups to perform background subtraction. \newline
+
+We will explore two methods of RPCA for the group detection step, the convex formulation used in \cite{xin_liu_background_2015}, and a more recent nonconvex formulation \cite{yi_fast_2016}. In the first method \cite{xin_liu_background_2015}, a structured norm is used to exploit the group-sparse structure of the foreground in images. In the second method \cite{yi_fast_2016}, gradient descent is used to find the principal components in less time. We will reproduce the main results of these papers and investigate potential improvements on the choice of solver for the convex formulation. \newline
+
+Ultimately, we plan to deliver a comparison of the two approaches to background extraction described above. In addition, we will explore the impact of the two pass process and subsampling and compare our findings with the results from \cite{xin_liu_background_2015} and \cite{yi_fast_2016}. We expect to find that the approach using the non-convex formulation of the problem will give superior results in terms of performance but it is not clear to us which approach will produce the best background separation.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Completed Work}
 
@@ -48,5 +61,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
+\bibliography{CVXProject}
 \end{document}

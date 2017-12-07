@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{xin_liu_background_2015}
+{Xin Liu}, {Guoying Zhao}, {Jiawen Yao}, and {Chun Qi}, ``Background
+  {{Subtraction Based}} on {{Low}}-{{Rank}} and {{Structured Sparse
+  Decomposition}},'' {\em IEEE Transactions on Image Processing}, vol.~24,
+  pp.~2502--2514, Aug. 2015.
+
+\bibitem{yi_fast_2016}
+X.~Yi, D.~Park, Y.~Chen, and C.~Caramanis, ``Fast algorithms for robust {{PCA}}
+  via gradient descent,'' in {\em Advances in Neural Information Processing
+  Systems}, pp.~4152--4160, 2016.
+
+\end{thebibliography}

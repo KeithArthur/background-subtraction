@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.28)  6 DEC 2017 20:37
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.8.28)  6 DEC 2017 21:17
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -911,26 +911,57 @@ ABD: EveryShipout initializing macros
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
+
+Underfull \hbox (badness 10000) in paragraph at lines 34--40
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 41--42
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 47--48
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 49--50
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 51--52
+
+ []
+
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./CVXReport.aux) ) 
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./CVXReport.bbl)
+[2] (./CVXReport.aux) ) 
 Here is how much of TeX's memory you used:
- 13878 strings out of 493029
- 266275 string characters out of 6136234
- 318420 words of memory out of 5000000
- 17128 multiletter control sequences out of 15000+600000
- 7954 words of font info for 29 fonts, out of 8000000 for 9000
+ 13892 strings out of 493029
+ 266448 string characters out of 6136234
+ 322563 words of memory out of 5000000
+ 17138 multiletter control sequences out of 15000+600000
+ 8754 words of font info for 32 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 62i,6n,56p,440b,189s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/share/t
-exlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmr17.pfb>
-Output written on CVXReport.pdf (1 page, 37919 bytes).
+ 62i,6n,56p,641b,189s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfon
+ts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/shar
+e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/share/texlive/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/texlive/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmti10.pfb>
+Output written on CVXReport.pdf (2 pages, 114547 bytes).
 PDF statistics:
- 27 PDF objects out of 1000 (max. 8388607)
- 19 compressed objects within 1 object stream
+ 54 PDF objects out of 1000 (max. 8388607)
+ 39 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

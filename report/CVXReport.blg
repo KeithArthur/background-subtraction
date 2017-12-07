@@ -1,0 +1,46 @@
+This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: CVXReport.aux
+The style file: ieeetr.bst
+Database file #1: CVXProject.bib
+You've used 2 entries,
+            1876 wiz_defined-function locations,
+            491 strings with 3909 characters,
+and the built_in function-call counts, 820 in all, are:
+= -- 83
+> -- 28
+< -- 0
++ -- 10
+- -- 8
+* -- 59
+:= -- 112
+add.period$ -- 2
+call.type$ -- 2
+change.case$ -- 2
+chr.to.int$ -- 0
+cite$ -- 2
+duplicate$ -- 41
+empty$ -- 72
+format.name$ -- 8
+if$ -- 197
+int.to.chr$ -- 0
+int.to.str$ -- 2
+missing$ -- 2
+newline$ -- 9
+num.names$ -- 2
+pop$ -- 8
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 36
+stack$ -- 0
+substring$ -- 80
+swap$ -- 22
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 0
+while$ -- 8
+width$ -- 3
+write$ -- 21
