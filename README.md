@@ -2,7 +2,7 @@
 ### Setup
   * Download LSD data from link below
   * Install SPAMS from: [here](https://github.com/conda-forge/python-spams-feedstock) (if you use anaconda) or [here](http://spams-devel.gforge.inria.fr/downloads.html)
-  * `pip install -r requirements.txt` if you don't have all the dependecies.
+  * `pip install -r requirements.txt` if you don't have all the dependencies.
 
 ### Links
   * [Google Doc](https://docs.google.com/document/d/1J9UBF9qWj5F0dgwaR13iziSsxwNf4S1EjGhgPV-Wc1g/edit)
