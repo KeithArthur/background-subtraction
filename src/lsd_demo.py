@@ -90,7 +90,7 @@ def main():
         frame_index, frames_to_process = read_images(video_name)
     frame_dimensions = frames_to_process.shape[1:]
 
-    downsampling_ratio = 1.0 / 4.0
+    downsampling_ratio = 1.0 / 1.0
     downsampled_frames = f.resize_frames(frames_to_process, downsampling_ratio)
     downsampled_frame_dimensions = downsampled_frames.shape[1:]
 
