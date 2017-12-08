@@ -1,4 +1,4 @@
-# cvx-opt-project
+# Background Subtraction
 ### Setup
   * Download LSD data from link below
   * Install SPAMS from: [here](https://github.com/conda-forge/python-spams-feedstock) (if you use anaconda) or [here](http://spams-devel.gforge.inria.fr/downloads.html)
