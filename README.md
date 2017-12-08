@@ -16,4 +16,3 @@
   * Prepend function names with _ if they should not be called directly by other parts of the code.
   * Write short functions.
   * Append variable names with symbol used in literature if you feel it would help. For example `video_frames_D` or `background_L`.
-  * Write some tests if you want :)
