@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.linalg as la
-#import spams
+import spams
 
 import platform
 project_float = np.float64 if '64' in platform.architecture()[0] else np.float32

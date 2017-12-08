@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import numpy.linalg as la
 
@@ -10,14 +11,17 @@ def _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, rk=-1):
     background_G_L = frames_D - foreground_S + dual_Y / dual_mu
     return shrink(background_G_L, 1.0 / dual_mu, rk)
 
-def _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda):
+def _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda, norm_choice):
     foreground_G_S = frames_D - background_L + dual_Y / dual_mu
-    
-    #L1- norm
-    return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
-    
-    #Structured Sparsity 
-    #return min_cost_flow(foreground_G_S, graph, regularization_lambda / dual_mu)
+
+    if norm_choice == 'l1':
+        #L1- norm
+        return np.maximum(np.abs(foreground_G_S) - regularization_lambda, 0) * np.sign(foreground_G_S)
+    elif norm_choice == 'structured_sparsity':
+        #Structured Sparsity
+        return min_cost_flow(foreground_G_S, graph, regularization_lambda / dual_mu)
+    else:
+        raise ValueError('norm_choice is not valid.')
 
 def _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S):
     return dual_Y + dual_mu * (frames_D - background_L - foreground_S)
@@ -26,8 +30,7 @@ def _calc_error(frames_D, background_L, foreground_S):
     distance = frames_D - background_L - foreground_S
     return la.norm(distance,'fro') / la.norm(frames_D,'fro');
 
-def inexact_alm_lsd(frames_D, graph=None, max_iterations=30):
-    import time
+def inexact_alm_lsd(frames_D, graph, norm_choice, max_iterations=30):
     st_time = time.clock()
     
     alm_penalty_scalar_rho = 1.2
@@ -45,7 +48,7 @@ def inexact_alm_lsd(frames_D, graph=None, max_iterations=30):
     rk = min(num_pixels_n, num_frames_p)
     for t in range(max_iterations):
         background_L, rk = _calc_background_L(frames_D, dual_Y, dual_mu, foreground_S, 1)
-        foreground_S = _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda)
+        foreground_S = _calc_foreground_S(frames_D, dual_Y, dual_mu, background_L, graph, regularization_lambda, norm_choice)
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e6)
         err.append(_calc_error(frames_D, background_L, foreground_S))
