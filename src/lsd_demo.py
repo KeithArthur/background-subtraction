@@ -134,8 +134,8 @@ def main():
         bg_images = [PIL.Image.fromarray(frame) for frame in final_bg]
 
         for i in range(len(fg_images)):
-            fg_images[i].save(project_path + "src/foreground/out" + str(i) + norm_choice + ".gif")
-            bg_images[i].save(project_path + "src/background/out" + str(i) + norm_choice + ".gif")
+            fg_images[i].save(project_path + "src/foreground/out" + str(i).zfill(3) + norm_choice + ".gif")
+            bg_images[i].save(project_path + "src/background/out" + str(i).zfill(3) + norm_choice + ".gif")
 
         bg_images[0].save(project_path + norm_choice + "bg_out.gif", save_all=True, append_images=bg_images[1:])
         fg_images[0].save(project_path + norm_choice + "fg_out.gif", save_all=True, append_images=fg_images[1:])

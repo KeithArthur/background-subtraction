@@ -138,11 +138,6 @@ def set_groups_saliencies(groups, trajectories, video_data_dimensions, len_thres
     trajectory_saliencies = _calc_trajectory_saliencies(trajectories, len_thresh)
     pixel_saliencies = _get_pixel_saliencies(trajectory_saliencies, pixel_trajectory_lookup)
         
-    import PIL.Image
-    sal_map = [PIL.Image.fromarray(10*frame) for frame in pixel_saliencies]
-    for i in range(len(sal_map)):
-        sal_map[i].save("./sal_map/out" + str(i) + ".gif")
-        
     for group in groups:
         group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['index'])
