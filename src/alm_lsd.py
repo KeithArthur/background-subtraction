@@ -26,7 +26,7 @@ def _calc_error(frames_D, background_L, foreground_S):
     distance = frames_D - background_L - foreground_S
     return la.norm(distance,'fro') / la.norm(frames_D,'fro');
 
-def inexact_alm_lsd(frames_D, graph=None, max_iterations=30):
+def inexact_alm_lsd(frames_D, graph=None, max_iterations=100):
     import time
     st_time = time.clock()
     
@@ -80,8 +80,8 @@ def _calc_foreground_S_bs(frames_D, dual_Y, dual_mu, background_L, group_info):
     return ret_S
 
 def inexact_alm_bs(frames_D, group_info, max_iterations=100):
-    alm_penalty_scalar_rho = 1.2
-    tolerance = 1e-11
+    alm_penalty_scalar_rho = 1.1
+    #tolerance = 1e-11
     err = []
     num_pixels_n, num_frames_p = frames_D.shape
     
@@ -100,7 +100,7 @@ def inexact_alm_bs(frames_D, group_info, max_iterations=100):
         dual_Y = _calc_Y(frames_D, dual_Y, dual_mu, background_L, foreground_S)
         dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e6)
         err.append(_calc_error(frames_D, background_L, foreground_S))
-        if err[-1] < tolerance:
-            break
+        #if err[-1] < tolerance:
+        #    break
         
     return background_L, foreground_S, err

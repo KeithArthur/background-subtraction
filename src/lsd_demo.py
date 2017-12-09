@@ -39,14 +39,15 @@ def read_images(data_name):
     return [0, len(frames)], np.array(frames)
     
 def main():
+    no_cache = True
+    """
     frame_index = [0, 48]
     video_data_path = '../LSD/data/WaterSurface.mat'
     all_frames = scipy.io.loadmat(video_data_path)['ImData']
-    start_frame_index = frame_index[0]
-    end_frame_index = frame_index[1]
-    frames_to_process = np.rollaxis(all_frames[:, :, start_frame_index:end_frame_index], 2)
+    frames_to_process = np.rollaxis(all_frames[:, :, frame_index[0]:frame_index[1]], 2)
+    """
     
-    #frame_index, frames_to_process = read_images('rain')   
+    frame_index, frames_to_process = read_images('rain')
     frame_dimensions = frames_to_process.shape[1:]
     
     downsampling_ratio = 1.0 / 4.0
@@ -59,7 +60,6 @@ def main():
     frames_D = f.frames_to_matrix(normalized_frames, num_frames, downsampled_frame_dimensions)
     #batch_dimensions = [3, 3]
     #graph = g.build_graph(downsampled_frame_dimensions, batch_dimensions)
-   
     #print ('L1')
     #background_L, foreground_S, err = inexact_alm_lsd(frames_D, graph)
     print ('FRPCA')
@@ -72,30 +72,40 @@ def main():
     upsampled_fg = np.int32(upsampled_fg > 128) * 255
     
     # print
+    """
     bg_bin = f.restore_background(f.matrix_to_frames(background_L, num_frames, 
                                                      downsampled_frame_dimensions), original_mean)
     bg_images = [PIL.Image.fromarray(frame) for frame in bg_bin]
     fg_images = [PIL.Image.fromarray(frame) for frame in upsampled_fg]
-    for i in range(len(fg_images)):
-        fg_images[i].save("./foreground/out" + str(i) + ".gif")
-        bg_images[i].save("./background/out" + str(i) + ".gif")
-    return
     
+    for i in range(len(fg_images)):
+        fg_images[i].save("./foreground/out" + ("%0*d" % (3,i)) + ".gif")
+        bg_images[i].save("./background/out" + ("%0*d" % (3,i)) + ".gif")
+    #fp = PIL.Image.open("fg_out.gif")
+    #fp.save(fg_images[0], duration = 100, save_all=fg_images[1:])
+    return
+    """
 
+    backward_seq = np.flip(frames_to_process, 0)
     print ('---Phase 2.1---')
-    if os.path.isfile('save.p'):
-        trajectories = pickle.load(open( "save.p", "rb" ))
+    if not no_cache and os.path.isfile('save.p'):
+        trajectories_forward = pickle.load(open( "save.p", "rb" ))
+        trajectories_backward = np.flip(trajectories_forward, 0) / 2.0
     else:
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
-        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
-        pickle.dump(trajectories, open( "save.p", "wb" ))
+        trajectories_forward = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
+        
+        optical_back = m.calc_forward_backward_flow(backward_seq)
+        trajectories_backward = m.calc_trajectories(optical_back[0], optical_back[1], frame_dimensions, 5)
+        if( not no_cache ):
+            pickle.dump(trajectories_forward, open( "save.p", "wb" ))
     
     print ('---Phase 2.2---')
     # identify ground and compute lambda
     video_data_dimensions = [num_frames] + list(frame_dimensions)
     groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:], min_size=50)
-    m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 5)
+    m.set_groups_saliencies(groups_info, trajectories_forward, trajectories_backward, video_data_dimensions)
     m.set_regularization_lambdas(groups_info, video_data_dimensions)
     
     print ('---Phase 3---')
@@ -114,8 +124,8 @@ def main():
     bg_images = [PIL.Image.fromarray(frame) for frame in final_bg]
 
     for i in range(len(fg_images)):
-        fg_images[i].save("./foreground/out" + str(i) + ".gif")
-        bg_images[i].save("./background/out" + str(i) + ".gif")
+        fg_images[i].save("./foreground/out" + ("%0*d" % (3,i)) + ".gif")
+        bg_images[i].save("./background/out" + ("%0*d" % (3,i)) + ".gif")
         
     bg_images[0].save("bg_out.gif", save_all=True, append_images=bg_images[1:])
     fg_images[0].save("fg_out.gif", save_all=True, append_images=fg_images[1:])

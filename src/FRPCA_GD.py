@@ -34,7 +34,7 @@ def UVproj(A, bound):
     #        A[i] = A[i]*bound/rownorm
     #return A
 
-def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 30):
+def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 100):
     import time
     st_time = time.clock()
     
