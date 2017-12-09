@@ -34,7 +34,7 @@ def UVproj(A, bound):
     #        A[i] = A[i]*bound/rownorm
     #return A
 
-def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 30):
+def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 100):
     import time
     st_time = time.clock()
     
@@ -66,7 +66,7 @@ def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 30):
         
         lossmat = Mt + St - Y             #difference between est and observation
         error = la.norm(lossmat)/Ynorm
-        print(error, 'error at iteration', i)
+        #print(error, 'error at iteration', i)
         
         UminV = np.dot(Ut.T, Ut) - np.dot(Vt.T, Vt)
         Utnew = Ut - eta*np.dot(lossmat, Vt) - .5*eta*np.dot(Ut, UminV)

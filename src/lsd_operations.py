@@ -16,7 +16,7 @@ def _soft_thresh(S, threshold):
 def shrink(M, threshold, rk = -1):
     [U, S, V] = la.svd(M, full_matrices=False)
     
-    nrk = len(S[S>threshold])
+    nrk = max(1, len(S[S>threshold]))
     if(rk > 0): nrk = rk
     
     return np.dot(U[:, :nrk], np.dot(np.diag(_soft_thresh(S[:nrk], threshold)), V[:nrk, :])), nrk

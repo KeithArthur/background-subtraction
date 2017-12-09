@@ -26,13 +26,11 @@ sys.path.append(project_path + 'src/')
 def read_images(data_name):
     import glob
     import re
-    
     def numericalSort(value):
         _numbers = re.compile(r'(\d+)')
         parts = _numbers.split(value)
         parts[1::2] = map(int, parts[1::2])
         return parts
-
     frame_path = project_path + 'data/' + data_name + '/'
     frames = []
     file_list = glob.glob(frame_path + "*.jpg")
@@ -40,7 +38,6 @@ def read_images(data_name):
         image = PIL.Image.open(file_names)
         frame = np.asarray(image)
         frames.append(frame)
-        
     return [0, len(frames)], np.array(frames)
 
 def first_pass(frames_D, original_mean, frame_dimensions, downsampled_frame_dimensions, num_frames, norm_choice):
@@ -100,13 +97,17 @@ def main():
     frames_D = f.frames_to_matrix(normalized_frames, num_frames, downsampled_frame_dimensions)
 
     print ('---Identifying Trajectories---')
+    backward_seq = np.flip(frames_to_process, 0)
     if os.path.isfile('save.p'):
-        trajectories = pickle.load(open( "save.p", "rb" ))
+        trajectories_forward = pickle.load(open( "save.p", "rb" ))
+        trajectories_backward = np.flip(trajectories_forward, 0) / 2.0
     else:
         # find trajectory
         optical_flows = m.calc_forward_backward_flow(frames_to_process)
-        trajectories = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
-        pickle.dump(trajectories, open( "save.p", "wb" ))
+        trajectories_forward = m.calc_trajectories(optical_flows[0], optical_flows[1], frame_dimensions, 5)
+        optical_back = m.calc_forward_backward_flow(backward_seq)
+        trajectories_backward = m.calc_trajectories(optical_back[0], optical_back[1], frame_dimensions, 5)
+        pickle.dump(trajectories_forward, open( "save.p", "wb" ))
 
     for norm_choice in ['l1', 'structured_sparsity', 'frpca']:
         upsampled_fg = first_pass(frames_D, original_mean, frame_dimensions, downsampled_frame_dimensions, num_frames, norm_choice)
@@ -115,7 +116,7 @@ def main():
         # identify ground and compute lambda
         video_data_dimensions = [num_frames] + list(frame_dimensions)
         groups_info = group.find_groups(upsampled_fg, num_frames, upsampled_fg.shape[1:], min_size=50)
-        m.set_groups_saliencies(groups_info, trajectories, video_data_dimensions, 5)
+        m.set_groups_saliencies(groups_info, trajectories_forward, trajectories_backward, video_data_dimensions)
         m.set_regularization_lambdas(groups_info, video_data_dimensions)
 
         print ('---Group Sparse RPCA---')
@@ -139,7 +140,7 @@ def main():
 
         bg_images[0].save(project_path + norm_choice + "bg_out.gif", save_all=True, append_images=bg_images[1:])
         fg_images[0].save(project_path + norm_choice + "fg_out.gif", save_all=True, append_images=fg_images[1:])
-    
+
 
 if __name__ == "__main__":
     main()
