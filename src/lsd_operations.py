@@ -19,7 +19,6 @@ def shrink(M, threshold, rk = -1):
     nrk = max(1, len(S[S>threshold]))
     if(rk > 0): nrk = rk
     
-    print sum(S)
     return np.dot(U[:, :nrk], np.dot(np.diag(_soft_thresh(S[:nrk], threshold)), V[:nrk, :])), nrk
 
 def min_cost_flow(input_signal_U, graph, lambda1):
