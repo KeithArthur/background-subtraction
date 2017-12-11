@@ -43,7 +43,7 @@ def _update_trajectories(flow_f, flow_b, trajectories, complete_trajectories, fr
                 complete_trajectories['positions'].append(tp)
                 complete_trajectories['st_frame'].append(tf)
                 
-        else:            
+        else:
             trajectories['positions'][index].append(np.array([nx, ny]))
             trajectories['deltas'][index].append(delta)
 
@@ -122,7 +122,7 @@ def calc_trajectories(forward_flows, backward_flows, frame_dimensions, len_thres
     extend_dict(completed_trajectories, trajectories)       
     return completed_trajectories
 
-def set_groups_saliencies(groups, trajectories_f, trajectories_b, video_data_dimensions):
+def set_pixel_saliencies(trajectories_f, trajectories_b, video_data_dimension):
     pixel_trajectory_lookup = _get_pixel_trajectory_lookup(trajectories_f, video_data_dimensions)
     trajectory_saliencies_f = _calc_trajectory_saliencies(trajectories_f, 5)
     pixel_saliencies_f = _get_pixel_saliencies(trajectory_saliencies_f, pixel_trajectory_lookup)
@@ -132,7 +132,9 @@ def set_groups_saliencies(groups, trajectories_f, trajectories_b, video_data_dim
     pixel_saliencies_b = _get_pixel_saliencies(trajectory_saliencies_b, pixel_trajectory_lookup)
     
     pixel_saliencies = (pixel_saliencies_f + np.flip(pixel_saliencies_b, 0)) / 2.0
-        
+    return pixel_saliencies
+    
+def set_groups_saliencies(groups, pixel_saliencies, video_data_dimensions):
     for group in groups:
         group_pixel_saliencies = g.keep_only_in_group(pixel_saliencies[group['frame']], group['elems'])
         group['salience'] = np.sum(group_pixel_saliencies) / len(group['index'])

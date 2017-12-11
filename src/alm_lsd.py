@@ -30,7 +30,7 @@ def _calc_error(frames_D, background_L, foreground_S):
     distance = frames_D - background_L - foreground_S
     return la.norm(distance,'fro') / la.norm(frames_D,'fro');
 
-def inexact_alm_lsd(frames_D, graph, norm_choice, max_iterations=30):
+def inexact_alm_lsd(frames_D, graph, norm_choice, max_iterations=30, verbose = False):
     st_time = time.clock()
     
     alm_penalty_scalar_rho = 1.2
@@ -53,11 +53,11 @@ def inexact_alm_lsd(frames_D, graph, norm_choice, max_iterations=30):
         dual_mu = min(alm_penalty_scalar_rho * dual_mu, mu0 * 1e6)
         err.append(_calc_error(frames_D, background_L, foreground_S))
         
-        print t, err[-1]
         if err[-1] < tolerance:
             break
  
-    print time.clock() - st_time
+    if( verbose ):
+        print ('CPU Time(s): ', time.clock() - st_time)
     return background_L, foreground_S, err
 
 

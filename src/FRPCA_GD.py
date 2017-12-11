@@ -34,7 +34,7 @@ def UVproj(A, bound):
     #        A[i] = A[i]*bound/rownorm
     #return A
 
-def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 100):
+def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 100, verbose = False):
     import time
     st_time = time.clock()
     
@@ -77,7 +77,8 @@ def FRPCA(Y, alpha = .1, gamma = 1., mu = 10., r = 1, T = 100):
     Mt = np.dot(Ut, Vt.T)
     St = Talpha(Y - Mt, gamalph, d1, d2)
     
-    print time.clock() - st_time
+    if( verbose ):
+        print ('CPU Time(s): ', time.clock() - st_time)
     return np.array(Mt), np.array(St), error
 
 def main():
